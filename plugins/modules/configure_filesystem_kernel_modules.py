@@ -66,7 +66,7 @@ def run_module():
 
     if skip_squashfs and 'squashfs' in modules_list:
         result['skipped_modules'].append('squashfs')
-        result['debug_message'] = 'squashfs is in use (snap packages or built-in kernel module) – skipped configuration and unloading.'
+        result['debug_message'] = 'squashfs is in use (snap packages or built-in kernel module) - skipped configuration and unloading.'
         # Remove squashfs from processing list to pretend it's not there
         modules_list = [m for m in modules_list if m != 'squashfs']
 
@@ -131,6 +131,9 @@ def run_module():
 
             if this_needs_change:
                 content_changed = True
+
+    if content_changed:
+        changed = True
 
     # Apply file changes if needed
     if not module.check_mode:

@@ -1,0 +1,54 @@
+---
+dtvlinux_cis_hardening_configure_filesystem_kernel_modules_config_file: /etc/modprobe.d/cis_hardening.conf
+dtvlinux_cis_hardening_configure_filesystem_kernel_modules_modules:
+  - cramfs
+  - freevxfs
+  - hfs
+  - hfsplus
+  - jffs2
+  - overlayfs
+  - squashfs
+  - udf
+  - usb-storage
+  # configure_filesystem_partitions:
+  #   disk: /dev/disk/by-path/pci-0000:04:00.0
+  #   partitions:
+  #     /tmp:
+  #       size: 2G
+  #       fstype: ext4
+  #       options: defaults,rw,nosuid,nodev,noexec,relatime
+  #       dump: 0
+  #       fschk: 0
+  #     /dev/shm:
+  #       size: 2G
+  #       options: defaults,rw,nosuid,nodev,noexec,relatime
+  #     /home:
+  #       size: 2G
+  #       fstype: ext4
+  #       options: defaults,rw,nosuid,nodev,relatime
+  #       dump: 0
+  #       fschk: 0
+  #     /var:
+  #       size: 8G
+  #       fstype: ext4
+  #       options: defaults,rw,nosuid,nodev,relatime
+  #       dump: 0
+  #       fschk: 0
+  #     /var/tmp:
+  #       size: 2G
+  #       fstype: ext4
+  #       options: defaults,rw,nosuid,nodev,noexec,relatime
+  #       dump: 0
+  #       fschk: 0
+  #     /var/log:
+  #       size: 2G
+  #       fstype: ext4
+  #       options: defaults,rw,nosuid,nodev,noexec,relatime
+  #       dump: 0
+  #       fschk: 0
+  #     /var/log/audit:
+  #       size: 2G
+  #       fstype: ext4
+  #       options: defaults,rw,nosuid,nodev,noexec,relatime
+  #       dump: 0
+  #       fschk: 0

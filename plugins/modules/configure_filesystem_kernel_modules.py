@@ -43,21 +43,23 @@ def run_module():
 
     # Check if squashfs is in use (snap packages mounted)
     try:
-        snap_output = subprocess.check_output("lsblk | grep -wc '/snap'", shell=True, text=True).strip()
-        if int(snap_output) > 0:
+        snap_output = subprocess.check_output(['lsblk', '-o', 'MOUNTPOINT'], text=True)
+        snap_count = sum(1 for line in snap_output.splitlines() if '/snap' in line.strip())
+        if snap_count > 0:
             squashfs_in_use = True
     except Exception:
         pass
 
     # Check if squashfs is built into the kernel
     try:
-        kernel = subprocess.check_output(['uname', '-r'], text=True).strip()
-        builtin_cmd = f"cat /lib/modules/{kernel}/modules.builtin | grep 'squashfs'"
-        subprocess.check_call(builtin_cmd, shell=True)
-        squashfs_builtin = True
-    except subprocess.CalledProcessError as e:
-        if e.returncode not in [0, 1]:
-            module.fail_json(msg=f"Failed to check if squashfs is built-in: {str(e)}", **result)
+        kernel = os.uname()[2]
+        builtin_path = f'/lib/modules/{kernel}/modules.builtin'
+        if os.path.exists(builtin_path):
+            with open(builtin_path, 'r') as f:
+                for line in f:
+                    if 'squashfs' in line:
+                        squashfs_builtin = True
+                        break
     except Exception as e:
         module.fail_json(msg=f"Failed to check if squashfs is built-in: {str(e)}", **result)
 
@@ -66,7 +68,7 @@ def run_module():
 
     if skip_squashfs and 'squashfs' in modules_list:
         result['skipped_modules'].append('squashfs')
-        result['debug_message'] = 'squashfs is in use (snap packages or built-in kernel module) - skipped configuration and unloading.'
+        result['debug_message'] = 'squashfs is in use (snap packages or built-in kernel module) – skipped configuration and unloading.'
         # Remove squashfs from processing list to pretend it's not there
         modules_list = [m for m in modules_list if m != 'squashfs']
 
@@ -105,10 +107,10 @@ def run_module():
         for is_install in [True, False]:
             if is_install:
                 target_line = f"install {mod} /bin/false"
-                regexp_str = r"^(#)?install " + re.escape(mod) + r"(\s|$)"
+                regexp_str = r"^(#)?install\s+" + re.escape(mod) + r"\s"
             else:
                 target_line = f"blacklist {mod}"
-                regexp_str = r"^(#)?blacklist " + re.escape(mod) + r"$"
+                regexp_str = r"^(#)?blacklist\s+" + re.escape(mod) + r"$"
 
             regexp = re.compile(regexp_str)
 
@@ -146,20 +148,28 @@ def run_module():
             os.chown(config_file, 0, 0)
             os.chmod(config_file, 0o644)
 
-    # Unload modules if they are loaded (requires root)
+    # Fetch loaded modules once for efficiency
     unloaded_modules = []
-    for mod in modules_list:
+    if modules_list:
         try:
             lsmod_output = subprocess.check_output(['lsmod'], text=True)
-            if re.search(fr'\b{mod}\b', lsmod_output):
+            loaded_modules = set()
+            for line in lsmod_output.splitlines()[1:]:
+                if line.strip():
+                    loaded_modules.add(line.split()[0])
+        except Exception as e:
+            module.fail_json(msg=f"Failed to check loaded modules: {str(e)}", **result)
+
+        # Unload modules if they are loaded
+        for mod in modules_list:
+            if mod in loaded_modules:
                 if not module.check_mode:
-                    subprocess.check_call(['modprobe', '-r', mod])
+                    try:
+                        subprocess.check_call(['modprobe', '-r', mod])
+                    except subprocess.CalledProcessError:
+                        pass  # Ignore if cannot unload (e.g., in use)
                 unloaded_modules.append(mod)
                 changed = True
-        except subprocess.CalledProcessError:
-            pass
-        except Exception as e:
-            module.fail_json(msg=f"Failed to handle module {mod}: {str(e)}", **result)
 
     result['changed'] = changed
     result['unloaded_modules'] = unloaded_modules

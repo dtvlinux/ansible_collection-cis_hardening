@@ -14,12 +14,7 @@ short_description: Configure filesystem kernel modules
 
 version_added: "1.0.0"
 
-description:
-  - This module creates or updates a configuration file in /etc/modprobe.d/ to disable specified kernel modules by blacklisting them and setting install to /bin/false.
-  - It also unloads the modules if they are currently loaded.
-  - Special handling for 'squashfs': skips configuration and unloading if it is in use (e.g., via snap packages) or built into the kernel.
-  - The module is idempotent and supports check mode.
-  - If 'squashfs' is the only module and it is skipped, the config file is not created if it does not exist.
+description: This module creates or updates a configuration file in /etc/modprobe.d/ to disable specified kernel modules by blacklisting them and setting install to /bin/false. It also unloads the modules if they are currently loaded. Special handling for 'squashfs' by skipping configuration and unloading if it is in use (e.g., via snap packages) or built into the kernel. The module is idempotent and supports check mode. If 'squashfs' is the only module and it is skipped, the config file is not created if it does not exist.
 
 options:
   config_file:
@@ -37,19 +32,10 @@ options:
 
 author:
   - Michael Lucraft (@dtvlinux)
-
-requirements:
-  - Python 3.6 or higher
-  - Access to subprocess for system commands (lsmod, modprobe, etc.)
-  - Root privileges (use become: yes in playbooks)
-
-notes:
-  - This module requires elevated privileges to modify files in /etc and unload modules.
-  - In verbose mode (-v or higher), additional details about skipped modules are returned.
-  - If no modules need configuration after skipping, the file is not created or modified unnecessarily.
 '''
 
 EXAMPLES = r'''
+
 # Specify single module for disabling
 - name: Disable cramfs
   dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
@@ -74,20 +60,24 @@ changed:
   description: Whether the module made any changes to the system.
   type: bool
   returned: always
+
 message:
   description: A status message describing the actions taken.
   type: str
   returned: always
+
 unloaded_modules:
   description: List of modules that were unloaded during the run.
   type: list
   elements: str
   returned: always
+
 skipped_modules:
   description: List of modules that were skipped (e.g., squashfs if in use).
   type: list
   elements: str
   returned: when verbosity >=1
+
 debug_message:
   description: Additional debug information about why modules were skipped.
   type: str

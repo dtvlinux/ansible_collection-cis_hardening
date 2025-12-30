@@ -251,8 +251,7 @@ def run_module():
 
     message_parts = [
         f'Ensured configuration file {config_file} exists with correct ownership, '
-        f'permissions, managed header, and kernel module configurations. '
-        f'Unloaded {len(unloaded_modules)} modules: {", ".join(unloaded_modules) or "none"}.'
+        f'permissions, managed header, and kernel module configurations.'
     ]
 
     if module._verbosity >= 1:

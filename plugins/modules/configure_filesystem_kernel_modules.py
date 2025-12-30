@@ -68,7 +68,7 @@ def run_module():
 
     if skip_squashfs and 'squashfs' in modules_list:
         result['skipped_modules'].append('squashfs')
-        result['debug_message'] = 'squashfs is in use (snap packages or built-in kernel module) - skipped configuration and unloading.'
+        result['debug_message'] = 'squashfs is in use (snap packages or built-in kernel module) – skipped configuration and unloading.'
         # Remove squashfs from processing list to pretend it's not there
         modules_list = [m for m in modules_list if m != 'squashfs']
 
@@ -81,7 +81,7 @@ def run_module():
         lines = []
         file_exists = False
 
-    # Check/correct ownership and permissions
+    # Check/correct ownership and permissions (always, if file exists)
     owner_needs_change = False
     mode_needs_change = False
     if file_exists:
@@ -93,57 +93,60 @@ def run_module():
         owner_needs_change = (current_uid != 0 or current_gid != 0)
         mode_needs_change = (current_mode != 0o644)
 
-    if owner_needs_change or mode_needs_change or not file_exists:
+    if owner_needs_change or mode_needs_change:
         changed = True
 
-    # Ensure managed header
-    header_needs_change = not lines or lines[0].rstrip('\n') != comment
-    if header_needs_change:
-        lines = [comment + '\n'] + lines
-        content_changed = True
+    # Only manage content if there are modules to configure
+    if modules_list:
+        # Ensure managed header
+        header_needs_change = not lines or lines[0].rstrip('\n') != comment
+        if header_needs_change:
+            lines = [comment + '\n'] + lines
+            content_changed = True
 
-    # Process each module for config
-    for mod in modules_list:
-        for is_install in [True, False]:
-            if is_install:
-                target_line = f"install {mod} /bin/false"
-                regexp_str = r"^(#)?install\s+" + re.escape(mod) + r"\s"
-            else:
-                target_line = f"blacklist {mod}"
-                regexp_str = r"^(#)?blacklist\s+" + re.escape(mod) + r"$"
+        # Process each module for config
+        for mod in modules_list:
+            for is_install in [True, False]:
+                if is_install:
+                    target_line = f"install {mod} /bin/false"
+                    regexp_str = r"^(#)?install\s+" + re.escape(mod) + r"\s"
+                else:
+                    target_line = f"blacklist {mod}"
+                    regexp_str = r"^(#)?blacklist\s+" + re.escape(mod) + r"$"
 
-            regexp = re.compile(regexp_str)
+                regexp = re.compile(regexp_str)
 
-            found_index = -1
-            for i, line in enumerate(lines):
-                if regexp.match(line.rstrip('\n')):
-                    found_index = i
+                found_index = -1
+                for i, line in enumerate(lines):
+                    if regexp.match(line.rstrip('\n')):
+                        found_index = i
 
-            this_needs_change = False
-            if found_index != -1:
-                current_line = lines[found_index].rstrip('\n')
-                if current_line != target_line:
+                this_needs_change = False
+                if found_index != -1:
+                    current_line = lines[found_index].rstrip('\n')
+                    if current_line != target_line:
+                        this_needs_change = True
+                        if not module.check_mode:
+                            lines[found_index] = target_line + '\n'
+                else:
                     this_needs_change = True
                     if not module.check_mode:
-                        lines[found_index] = target_line + '\n'
-            else:
-                this_needs_change = True
-                if not module.check_mode:
-                    lines.append(target_line + '\n')
+                        lines.append(target_line + '\n')
 
-            if this_needs_change:
-                content_changed = True
+                if this_needs_change:
+                    content_changed = True
 
-    if content_changed:
-        changed = True
+        if content_changed:
+            changed = True
 
-    # Apply file changes if needed
+    # If no modules and file doesn't exist, don't create it
+    # Otherwise, apply changes
     if not module.check_mode:
-        if content_changed or not file_exists:
+        if modules_list and (content_changed or not file_exists):
             with open(config_file, 'w') as f:
                 f.writelines(lines)
 
-        need_set_perms = owner_needs_change or mode_needs_change or content_changed or not file_exists
+        need_set_perms = owner_needs_change or mode_needs_change or (modules_list and (content_changed or not file_exists))
         if need_set_perms:
             os.chown(config_file, 0, 0)
             os.chmod(config_file, 0o644)

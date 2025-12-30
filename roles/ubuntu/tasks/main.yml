@@ -13,14 +13,13 @@
         state: stopped
         enabled: false
 
-    - name: Configure filesystem kernel modules
-      ansible.builtin.import_tasks: configure_filesystem_kernel_modules/main.yml
-      tags:
-        - cis_hardening_ubuntu_1_1
-        - cis_hardening_ubuntu_1_1_1
+    - name: 1 | Initial setup | Import tasks
+      ansible.builtin.import_tasks:
+        file: 1_initial_setup/main.yml
+      tags: "cis_section_1"
 
-    - name: Configure filesystem partitions
-      ansible.builtin.import_tasks: configure_filesystem_partitions/main.yml
-      tags:
-        - cis_hardening_ubuntu_1_1
-        - cis_hardening_ubuntu_1_1_2
+    # - name: Configure filesystem partitions
+    #   ansible.builtin.import_tasks: configure_filesystem_partitions/main.yml
+    #   tags:
+    #     - cis_hardening_ubuntu_1_1
+    #     - cis_hardening_ubuntu_1_1_2

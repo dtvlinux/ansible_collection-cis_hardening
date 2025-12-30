@@ -1,15 +1,65 @@
 ---
-dtvlinux_cis_hardening_configure_filesystem_kernel_modules_config_file: /etc/modprobe.d/cis_hardening.conf
-dtvlinux_cis_hardening_configure_filesystem_kernel_modules_modules:
-  - cramfs
-  - freevxfs
-  - hfs
-  - hfsplus
-  - jffs2
-  - overlayfs
-  - squashfs
-  - udf
-  - usb-storage
+# 1 - Initial Setup
+# -------------------------
+
+## 1.1 - Filesystem
+## ----------------------
+
+### 1.1.1 - Configure Filesystem Kernel Modules
+### ---------------------------------------------------
+
+# 1.1.1.1 - Ensure cramfs kernel module is not available (Automated)
+rule_1_1_1_1_apply: true
+rule_1_1_1_1_config: /etc/modprobe.d/cis_cramfs.conf
+
+# 1.1.1.2 - Ensure freevxfs kernel module is not available (Automated)
+rule_1_1_1_2_apply: true
+rule_1_1_1_2_config: /etc/modprobe.d/cis_freevxfs.conf
+
+# 1.1.1.3 - Ensure hfs kernel module is not available (Automated)
+rule_1_1_1_3_apply: true
+rule_1_1_1_3_config: /etc/modprobe.d/cis_hfs.conf
+
+# 1.1.1.4 - Ensure hfsplus kernel module is not available (Automated)
+rule_1_1_1_4_apply: true
+rule_1_1_1_4_config: /etc/modprobe.d/cis_hfsplus.conf
+
+# 1.1.1.5 - Ensure jffs2 kernel module is not available (Automated)
+rule_1_1_1_5_apply: true
+rule_1_1_1_5_config: /etc/modprobe.d/cis_jffs2.conf
+
+# 1.1.1.6 - Ensure overlayfs kernel module is not available (Automated)
+rule_1_1_1_6_apply: true
+rule_1_1_1_6_config: /etc/modprobe.d/cis_overlayfs.conf
+
+# 1.1.1.7 - Ensure squashfs kernel module is not available (Automated)
+rule_1_1_1_7_apply: true
+rule_1_1_1_7_config: /etc/modprobe.d/cis_squashfs.conf
+
+# 1.1.1.8 - Ensure udf kernel module is not available (Automated)
+rule_1_1_1_8_apply: true
+rule_1_1_1_8_config: /etc/modprobe.d/cis_udf.conf
+
+# 1.1.1.9 - Ensure usb-storage kernel module is not available (Automated)
+rule_1_1_1_9_apply: true
+rule_1_1_1_9_config: /etc/modprobe.d/cis_usb-storage.conf
+
+# 1.1.1.10 - Ensure unused filesystems kernel modules are not available (Manual)
+rule_1_1_1_10_apply: true
+rule_1_1_1_10_config: /etc/modprobe.d/cis_1_1_1_10.conf
+rule_1_1_1_10_module_afs: false
+rule_1_1_1_10_module_ceph: false
+rule_1_1_1_10_module_exfat: false
+rule_1_1_1_10_module_ext: false
+rule_1_1_1_10_module_fat: false
+rule_1_1_1_10_module_fscache: false
+rule_1_1_1_10_module_fuse: false
+rule_1_1_1_10_module_gfs2: false
+rule_1_1_1_10_module_nfs_common: false
+rule_1_1_1_10_module_nfsd: false
+rule_1_1_1_10_module_smbfs_common: false
+
+
   # configure_filesystem_partitions:
   #   disk: /dev/disk/by-path/pci-0000:04:00.0
   #   partitions:

@@ -1,0 +1,5 @@
+---
+- name: 1.1 | Filesystem | Import tasks
+  ansible.builtin.import_tasks:
+    file: 1_1_filesystem.yml
+  tags: "cis_section_1_1"

@@ -1,10 +1,98 @@
 #!/usr/bin/python
 
-# Copyright: (c) 2025, Your Name <your@email.com>
+# Copyright: (c) 2025, Michael Lucraft @dtvlinux
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
+
+DOCUMENTATION = r'''
+---
+module: configure_filesystem_kernel_modules
+
+short_description: Configure filesystem kernel modules
+
+version_added: "1.0.0"
+
+description:
+  - This module creates or updates a configuration file in /etc/modprobe.d/ to disable specified kernel modules by blacklisting them and setting install to /bin/false.
+  - It also unloads the modules if they are currently loaded.
+  - Special handling for 'squashfs': skips configuration and unloading if it is in use (e.g., via snap packages) or built into the kernel.
+  - The module is idempotent and supports check mode.
+  - If 'squashfs' is the only module and it is skipped, the config file is not created if it does not exist.
+
+options:
+  config_file:
+    description:
+      - Path to the modprobe configuration file.
+    required: false
+    type: str
+    default: /etc/modprobe.d/cis_hardening.conf
+  modules:
+    description:
+      - List of kernel modules to disable.
+    required: true
+    type: list
+    elements: str
+
+author:
+  - Michael Lucraft (@dtvlinux)
+
+requirements:
+  - Python 3.6 or higher
+  - Access to subprocess for system commands (lsmod, modprobe, etc.)
+  - Root privileges (use become: yes in playbooks)
+
+notes:
+  - This module requires elevated privileges to modify files in /etc and unload modules.
+  - In verbose mode (-v or higher), additional details about skipped modules are returned.
+  - If no modules need configuration after skipping, the file is not created or modified unnecessarily.
+'''
+
+EXAMPLES = r'''
+# Specify single module for disabling
+- name: Disable cramfs
+  dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
+    modules: cramfs
+
+# Specifiy multiple modules to be disabled
+- name: Disable cramfs & freevxfs
+  dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
+    modules:
+      - cramfs
+      - freevxfs
+
+# Specify a custom configuration file
+- name: Disable cramfs
+  dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
+    config_file: /etc/modprobe.d/cramfs.conf
+    modules: cramfs
+'''
+
+RETURN = r'''
+changed:
+  description: Whether the module made any changes to the system.
+  type: bool
+  returned: always
+message:
+  description: A status message describing the actions taken.
+  type: str
+  returned: always
+unloaded_modules:
+  description: List of modules that were unloaded during the run.
+  type: list
+  elements: str
+  returned: always
+skipped_modules:
+  description: List of modules that were skipped (e.g., squashfs if in use).
+  type: list
+  elements: str
+  returned: when verbosity >=1
+debug_message:
+  description: Additional debug information about why modules were skipped.
+  type: str
+  returned: when verbosity >=1
+'''
 
 import os
 import re
@@ -14,8 +102,16 @@ from ansible.module_utils.basic import AnsibleModule
 
 def run_module():
     module_args = dict(
-        config_file=dict(type='str', required=False, default='/etc/modprobe.d/cis_hardening.conf'),
-        modules=dict(type='list', elements='str', required=True),
+        config_file=dict(
+            type='str',
+            required=False,
+            default='/etc/modprobe.d/cis_hardening.conf'
+        ),
+        modules=dict(
+            type='list',
+            elements='str',
+            required=True
+        ),
     )
 
     result = dict(
@@ -37,11 +133,9 @@ def run_module():
     content_changed = False
     comment = '# Managed by Ansible collection dtvlinux.cis_hardening'
 
-    # Special handling for squashfs
     squashfs_in_use = False
     squashfs_builtin = False
 
-    # Check if squashfs is in use (snap packages mounted)
     try:
         snap_output = subprocess.check_output(['lsblk', '-o', 'MOUNTPOINT'], text=True)
         snap_count = sum(1 for line in snap_output.splitlines() if '/snap' in line.strip())
@@ -50,7 +144,6 @@ def run_module():
     except Exception:
         pass
 
-    # Check if squashfs is built into the kernel
     try:
         kernel = os.uname()[2]
         builtin_path = f'/lib/modules/{kernel}/modules.builtin'
@@ -63,17 +156,14 @@ def run_module():
     except Exception as e:
         module.fail_json(msg=f"Failed to check if squashfs is built-in: {str(e)}", **result)
 
-    # If squashfs is in use (via snap) or built-in, skip it
     skip_squashfs = squashfs_in_use or squashfs_builtin
 
     if skip_squashfs and 'squashfs' in modules_list:
         result['skipped_modules'].append('squashfs')
-        result['debug_message'] = 'squashfs is in use (snap packages or built-in kernel module) – skipped configuration and unloading.'
-        # Remove squashfs from processing list to pretend it's not there
+        result['debug_message'] = 'squashfs is in use (snap packages or built-in kernel module) - skipped configuration and unloading.'
         modules_list = [m for m in modules_list if m != 'squashfs']
 
     try:
-        # Read or initialize file content
         with open(config_file, 'r') as f:
             lines = f.readlines()
         file_exists = True
@@ -81,7 +171,6 @@ def run_module():
         lines = []
         file_exists = False
 
-    # Check/correct ownership and permissions (always, if file exists)
     owner_needs_change = False
     mode_needs_change = False
     if file_exists:
@@ -96,15 +185,12 @@ def run_module():
     if owner_needs_change or mode_needs_change:
         changed = True
 
-    # Only manage content if there are modules to configure
     if modules_list:
-        # Ensure managed header
         header_needs_change = not lines or lines[0].rstrip('\n') != comment
         if header_needs_change:
             lines = [comment + '\n'] + lines
             content_changed = True
 
-        # Process each module for config
         for mod in modules_list:
             for is_install in [True, False]:
                 if is_install:
@@ -139,8 +225,6 @@ def run_module():
         if content_changed:
             changed = True
 
-    # If no modules and file doesn't exist, don't create it
-    # Otherwise, apply changes
     if not module.check_mode:
         if modules_list and (content_changed or not file_exists):
             with open(config_file, 'w') as f:
@@ -151,7 +235,6 @@ def run_module():
             os.chown(config_file, 0, 0)
             os.chmod(config_file, 0o644)
 
-    # Fetch loaded modules once for efficiency
     unloaded_modules = []
     if modules_list:
         try:
@@ -163,14 +246,13 @@ def run_module():
         except Exception as e:
             module.fail_json(msg=f"Failed to check loaded modules: {str(e)}", **result)
 
-        # Unload modules if they are loaded
         for mod in modules_list:
             if mod in loaded_modules:
                 if not module.check_mode:
                     try:
                         subprocess.check_call(['modprobe', '-r', mod])
                     except subprocess.CalledProcessError:
-                        pass  # Ignore if cannot unload (e.g., in use)
+                        pass
                 unloaded_modules.append(mod)
                 changed = True
 
@@ -183,7 +265,6 @@ def run_module():
         f'Unloaded {len(unloaded_modules)} modules: {", ".join(unloaded_modules) or "none"}.'
     ]
 
-    # Include skip info only if verbose
     if module._verbosity >= 1:
         if result['skipped_modules']:
             skip_msg = f'Skipped modules: {", ".join(result["skipped_modules"])} ({result["debug_message"]}).'

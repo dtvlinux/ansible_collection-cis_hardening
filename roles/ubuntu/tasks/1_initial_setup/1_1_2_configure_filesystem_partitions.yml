@@ -11,6 +11,8 @@
     - cis_rule_1_1_2_3
     - cis_rule_1_1_2_4
     - cis_rule_1_1_2_5
+    - cis_rule_1_1_2_6
+    - cis_rule_1_1_2_7
   register: create_volume_group
   notify: cis_hardening_ubuntu_reboot_system
 
@@ -67,12 +69,6 @@
     - create_volume_group is success
   tags:
     - cis_rule_1_1_2_3
-    # - cis_level1_server
-    # - cis_level1_workstation
-    # - cis_control_4_8
-    # - cis_ig_2
-    # - cis_ig_3
-    # - nist_800_53_cm_7
   block:
     - name: 1.1.2.3.1 | Ensure /home is a separate partition | Logical volume
       community.general.lvol:
@@ -103,19 +99,124 @@
         state: present
         backup: yes
 
+- name: 1.1.2.4 | Configure /var
+  when:
+    - cis_section_1_1_2_apply
+    - cis_rule_1_1_2_4_apply
+    - create_volume_group is success
+  tags:
+    - cis_rule_1_1_2_4
+  block:
+    - name: 1.1.2.4.1 | Ensure /var is a separate partition | Logical volume
+      community.general.lvol:
+        vg: "{{ cis_section_1_1_2_vg_name}}"
+        lv: "{{ cis_rule_1_1_2_4_lv_name }}"
+        size: "{{ cis_rule_1_1_2_4_lv_size }}"
+      notify: cis_hardening_ubuntu_reboot_system
+
+    - name: 1.1.2.4.1 | Ensure /var is a separate partition | Filesystem
+      community.general.filesystem:
+        fstype: "{{ cis_rule_1_1_2_4_fs_type }}"
+        dev: "/dev/{{ cis_section_1_1_2_vg_name }}/{{ cis_rule_1_1_2_4_lv_name }}"
+      register: create_filesystem_var
+      notify: cis_hardening_ubuntu_reboot_system
+
+    - name: 1.1.2.4.1 | Ensure /var is a separate partition | Migrate data
+      dtvlinux.cis_hardening.migrate_filesystem_partitions:
+        path: /var
+        device: "/dev/{{ cis_section_1_1_2_vg_name }}/{{ cis_rule_1_1_2_4_lv_name }}"
+      when:
+        - create_filesystem_var.changed
+    
+    - name: 1.1.2.4.[2,3] | Ensure [nodev,nosuid] option set on /var partition | Filesystem table
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: '^[^#].*\s+/var\s+'
+        line: "/dev/{{ cis_section_1_1_2_vg_name }}/{{ cis_rule_1_1_2_4_lv_name }} /var {{ cis_rule_1_1_2_4_fs_type }} {{ cis_rule_1_1_2_4_fs_options }} {{ cis_rule_1_1_2_4_fs_dump }} {{ cis_rule_1_1_2_4_fs_passno }}"
+        state: present
+        backup: yes
+
+- name: 1.1.2.5 | Configure /var/tmp
+  when:
+    - cis_section_1_1_2_apply
+    - cis_rule_1_1_2_5_apply
+    - create_volume_group is success
+  tags:
+    - cis_rule_1_1_2_5
+  block:
+    - name: 1.1.2.5.1 | Ensure /var/tmp is a separate partition | Logical volume
+      community.general.lvol:
+        vg: "{{ cis_section_1_1_2_vg_name}}"
+        lv: "{{ cis_rule_1_1_2_5_lv_name }}"
+        size: "{{ cis_rule_1_1_2_5_lv_size }}"
+      notify: cis_hardening_ubuntu_reboot_system
+
+    - name: 1.1.2.5.1 | Ensure /var/tmp is a separate partition | Filesystem
+      community.general.filesystem:
+        fstype: "{{ cis_rule_1_1_2_5_fs_type }}"
+        dev: "/dev/{{ cis_section_1_1_2_vg_name }}/{{ cis_rule_1_1_2_5_lv_name }}"
+      register: create_filesystem_var_tmp
+      notify: cis_hardening_ubuntu_reboot_system
+
+    - name: 1.1.2.5.1 | Ensure /var/tmp is a separate partition | Migrate data
+      dtvlinux.cis_hardening.migrate_filesystem_partitions:
+        path: /var/tmp
+        device: "/dev/{{ cis_section_1_1_2_vg_name }}/{{ cis_rule_1_1_2_5_lv_name }}"
+      when:
+        - create_filesystem_var_tmp.changed
+    
+    - name: 1.1.2.5.[2,3,4] | Ensure [nodev,nosuid,noexec] option set on /var/tmp partition | Filesystem table
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: '^[^#].*\s+/var/tmp\s+'
+        line: "/dev/{{ cis_section_1_1_2_vg_name }}/{{ cis_rule_1_1_2_5_lv_name }} /var/tmp {{ cis_rule_1_1_2_5_fs_type }} {{ cis_rule_1_1_2_5_fs_options }} {{ cis_rule_1_1_2_5_fs_dump }} {{ cis_rule_1_1_2_5_fs_passno }}"
+        state: present
+        backup: yes
+
+- name: 1.1.2.6 | Configure /var/log
+  when:
+    - cis_section_1_1_2_apply
+    - cis_rule_1_1_2_6_apply
+    - create_volume_group is success
+  tags:
+    - cis_rule_1_1_2_6
+  block:
+    - name: 1.1.2.6.1 | Ensure /var/log is a separate partition | Logical volume
+      community.general.lvol:
+        vg: "{{ cis_section_1_1_2_vg_name}}"
+        lv: "{{ cis_rule_1_1_2_6_lv_name }}"
+        size: "{{ cis_rule_1_1_2_6_lv_size }}"
+      notify: cis_hardening_ubuntu_reboot_system
+
+    - name: 1.1.2.6.1 | Ensure /var/log is a separate partition | Filesystem
+      community.general.filesystem:
+        fstype: "{{ cis_rule_1_1_2_6_fs_type }}"
+        dev: "/dev/{{ cis_section_1_1_2_vg_name }}/{{ cis_rule_1_1_2_6_lv_name }}"
+      register: create_filesystem_var_log
+      notify: cis_hardening_ubuntu_reboot_system
+
+    - name: 1.1.2.6.1 | Ensure /var/log is a separate partition | Migrate data
+      dtvlinux.cis_hardening.migrate_filesystem_partitions:
+        path: /var/log
+        device: "/dev/{{ cis_section_1_1_2_vg_name }}/{{ cis_rule_1_1_2_6_lv_name }}"
+      when:
+        - create_filesystem_var_log.changed
+    
+    - name: 1.1.2.6.[2,3,4] | Ensure [nodev,nosuid,noexec] option set on /var/log partition | Filesystem table
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: '^[^#].*\s+/var/log\s+'
+        line: "/dev/{{ cis_section_1_1_2_vg_name }}/{{ cis_rule_1_1_2_6_lv_name }} /var/log {{ cis_rule_1_1_2_6_fs_type }} {{ cis_rule_1_1_2_6_fs_options }} {{ cis_rule_1_1_2_6_fs_dump }} {{ cis_rule_1_1_2_6_fs_passno }}"
+        state: present
+        backup: yes
+
 - name: 1.1.2.7 | Configure /var/log/audit
   when:
     - cis_section_1_1_2_apply
     - cis_rule_1_1_2_7_apply
     - create_volume_group is success
   tags:
-    - cis_rule_1_1_2_4
-    # - cis_level1_server
-    # - cis_level1_workstation
-    # - cis_control_4_8
-    # - cis_ig_2
-    # - cis_ig_3
-    # - nist_800_53_cm_7
+    - cis_rule_1_1_2_7
   block:
     - name: 1.1.2.7.1 | Ensure /var/log/audit is a separate partition | Logical volume
       community.general.lvol:
@@ -131,9 +232,9 @@
       register: create_filesystem_var_log_audit
       notify: cis_hardening_ubuntu_reboot_system
 
-    - name: 1.1.2.7.1 | Ensure /var_log_audit is a separate partition | Migrate data
+    - name: 1.1.2.7.1 | Ensure /var/log/audit is a separate partition | Migrate data
       dtvlinux.cis_hardening.migrate_filesystem_partitions:
-        path: /home
+        path: /var/log/audit
         device: "/dev/{{ cis_section_1_1_2_vg_name }}/{{ cis_rule_1_1_2_7_lv_name }}"
       when:
         - create_filesystem_var_log_audit.changed
@@ -145,5 +246,3 @@
         line: "/dev/{{ cis_section_1_1_2_vg_name }}/{{ cis_rule_1_1_2_7_lv_name }} /var/log/audit {{ cis_rule_1_1_2_7_fs_type }} {{ cis_rule_1_1_2_7_fs_options }} {{ cis_rule_1_1_2_7_fs_dump }} {{ cis_rule_1_1_2_7_fs_passno }}"
         state: present
         backup: yes
-
-

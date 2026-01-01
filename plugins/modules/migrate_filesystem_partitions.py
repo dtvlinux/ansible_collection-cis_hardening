@@ -91,7 +91,6 @@ validation_results:
 
 from ansible.module_utils.basic import AnsibleModule
 import os
-import re
 
 def run_module():
     module_args = dict(
@@ -104,33 +103,62 @@ def run_module():
 
     path = module.params['path'].rstrip('/')
     device = module.params['device']
-    
     temp_mnt = f"/mnt/migration_{os.path.basename(path)}"
-    if not os.path.exists(temp_mnt):
+
+    if not os.path.exists(path) or not os.path.isdir(path):
+        result['message'] = f"Source path {path} does not exist. Created directory for future mount."
         if not module.check_mode:
-            os.makedirs(temp_mnt)
+            os.makedirs(path, mode=0o755)
+        module.exit_json(**result)
+
+    volatile_paths = ['/tmp', '/dev/shm']
+    if path in volatile_paths:
+        result['message'] = f"Skipping data migration for volatile path: {path}"
+        module.exit_json(**result)
+
+    if not os.listdir(path):
+        result['message'] = f"Source path {path} is empty. No data to migrate."
+        module.exit_json(**result)
+
+    if module.check_mode:
+        result['changed'] = True
+        module.exit_json(**result)
+
+    if not os.path.exists(temp_mnt):
+        os.makedirs(temp_mnt)
 
     try:
-        if not module.check_mode:
-            rc, _, err = module.run_command(['mount', device, temp_mnt])
-            if rc != 0:
-                module.fail_json(msg=f"Failed to mount {device}: {err}")
+        rc, _, err = module.run_command(['mount', device, temp_mnt])
+        if rc != 0:
+            module.fail_json(msg=f"Failed to mount {device} on {temp_mnt}: {err}")
 
-            rsync_src = path + '/'
-            rsync_cmd = ['rsync', '-aAXH', '--delete', '--exclude=lost+found', rsync_src, temp_mnt]
-            rc_rs, _, err_rs = module.run_command(rsync_cmd)
-                
-            if rc_rs == 0:
-                result['changed'] = True
-            else:
-                module.fail_json(msg=f"Rsync migration failed: {err_rs}")
+        rsync_src = path + '/'
+        rsync_cmd = ['rsync', '-aAXH', '--delete', '--exclude=lost+found']
+
+        if path == '/var':
+            rsync_cmd.extend([
+                '--exclude=log/*', 
+                '--exclude=log/audit/*', 
+                '--exclude=tmp/*'
+            ])
+        elif path == '/var/log':
+            rsync_cmd.append('--exclude=audit/*')
+
+        rsync_cmd.extend([rsync_src, temp_mnt])
+        
+        rc_rs, _, err_rs = module.run_command(rsync_cmd)
+        
+        if rc_rs == 0:
+            result['changed'] = True
+            result['message'] = f"Successfully migrated data from {path} to {device}"
+        else:
+            module.fail_json(msg=f"Rsync migration failed: {err_rs}")
+
     finally:
-        if not module.check_mode:
-            module.run_command(['umount', temp_mnt])
-            if os.path.exists(temp_mnt):
-                os.rmdir(temp_mnt)
+        module.run_command(['umount', temp_mnt])
+        if os.path.exists(temp_mnt):
+            os.rmdir(temp_mnt)
 
-    result['message'] = f"Migrated data from {path} to {device}"
     module.exit_json(**result)
 
 if __name__ == '__main__':

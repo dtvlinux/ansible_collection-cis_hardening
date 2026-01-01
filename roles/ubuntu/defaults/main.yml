@@ -86,7 +86,7 @@ cis_section_1_1_2_vg_name: hardening_vg
 #### 1.1.2.1 - Configure /tmp
 cis_rule_1_1_2_1_apply: true
 cis_rule_1_1_2_1_lv_name: tmp_lv
-cis_rule_1_1_2_1_lv_size: 2G
+cis_rule_1_1_2_1_lv_size: 4G
 cis_rule_1_1_2_1_fs_type: ext4
 cis_rule_1_1_2_1_fs_options: defaults,rw,nosuid,nodev,noexec,relatime
 cis_rule_1_1_2_1_fs_dump: 0
@@ -103,6 +103,42 @@ cis_rule_1_1_2_3_fs_type: ext4
 cis_rule_1_1_2_3_fs_options: defaults,rw,nosuid,nodev,relatime
 cis_rule_1_1_2_3_fs_dump: 0
 cis_rule_1_1_2_3_fs_passno: 0
+
+#### 1.1.2.4 - Configure /var
+cis_rule_1_1_2_4_apply: true
+cis_rule_1_1_2_4_lv_name: var_lv
+cis_rule_1_1_2_4_lv_size: 8G
+cis_rule_1_1_2_4_fs_type: ext4
+cis_rule_1_1_2_4_fs_options: defaults,rw,nosuid,nodev,relatime
+cis_rule_1_1_2_4_fs_dump: 0
+cis_rule_1_1_2_4_fs_passno: 0
+
+#### 1.1.2.5 - Configure /var/tmp
+cis_rule_1_1_2_5_apply: true
+cis_rule_1_1_2_5_lv_name: var_tmp_lv
+cis_rule_1_1_2_5_lv_size: 2G
+cis_rule_1_1_2_5_fs_type: ext4
+cis_rule_1_1_2_5_fs_options: defaults,rw,nosuid,nodev,noexec,relatime
+cis_rule_1_1_2_5_fs_dump: 0
+cis_rule_1_1_2_5_fs_passno: 0
+
+#### 1.1.2.6 - Configure /var/log
+cis_rule_1_1_2_6_apply: true
+cis_rule_1_1_2_6_lv_name: var_log_lv
+cis_rule_1_1_2_6_lv_size: 4G
+cis_rule_1_1_2_6_fs_type: ext4
+cis_rule_1_1_2_6_fs_options: defaults,rw,nosuid,nodev,noexec,relatime
+cis_rule_1_1_2_6_fs_dump: 0
+cis_rule_1_1_2_6_fs_passno: 0
+
+#### 1.1.2.7 - Configure /var/log/audit
+cis_rule_1_1_2_7_apply: true
+cis_rule_1_1_2_7_lv_name: var_log_audit_lv
+cis_rule_1_1_2_7_lv_size: 4G
+cis_rule_1_1_2_7_fs_type: ext4
+cis_rule_1_1_2_7_fs_options: defaults,rw,nosuid,nodev,noexec,relatime
+cis_rule_1_1_2_7_fs_dump: 0
+cis_rule_1_1_2_7_fs_passno: 0
 
 
 

@@ -201,23 +201,23 @@ class ConfigureFilesystemKernelModules:
     def validate_current_state(self):
         if not self.check_config_file_exists():
             return {
-                "contents": {m: False for m in self.modules},
-                "exists":   False,
-                "group":    False,
-                "header":   False,
-                "mode":     False,
-                "unloaded": {m: False for m in self.modules},
-                "user":     False,
+                "conf_contents":   {m: False for m in self.modules},
+                "conf_exists":     False,
+                "conf_group":      False,
+                "conf_header":     False,
+                "conf_mode":       False,
+                "conf_user":       False,
+                "module_unloaded": {m: False for m in self.modules},
             }
         
         return {
-            "contents": self.check_config_file_contents(),
-            "exists":   True,
-            "group":    self.check_config_file_group(),
-            "header":   self.check_config_file_header(),
-            "mode":     self.check_config_file_mode(),
-            "unloaded": self.check_modules_unloaded(),
-            "user":     self.check_config_file_user(),
+            "conf_contents":   self.check_config_file_contents(),
+            "conf_exists":     True,
+            "conf_group":      self.check_config_file_group(),
+            "conf_header":     self.check_config_file_header(),
+            "conf_mode":       self.check_config_file_mode(),
+            "conf_user":       self.check_config_file_user(),
+            "module_unloaded": self.check_modules_unloaded(),
         }
 
     def create_config_file(self):
@@ -252,7 +252,7 @@ def main():
     skip_msg = manager.filter_modules()
     results  = manager.validate_current_state()
     
-    if not results['exists']:
+    if not results['conf_exists']:
         if not module.check_mode:
             manager.create_config_file()
         
@@ -265,18 +265,18 @@ def main():
     changed = False
     change_msg = []
 
-    if not results['mode']:
+    if not results['conf_mode']:
         changed = True
         change_msg.append("updated file mode")
         if not module.check_mode:
             manager.update_config_file_mode()
     
-    if not results['user'] or not results['group']:
+    if not results['conf_user'] or not results['conf_group']:
         changed = True
         
-        if not results['user'] and not results['group']:
+        if not results['conf_user'] and not results['conf_group']:
             change_msg.append("updated file user and group")
-        elif not results['user']:
+        elif not results['conf_user']:
             change_msg.append("updated file user")
         else:
             change_msg.append("updated file group")
@@ -284,21 +284,21 @@ def main():
         if not module.check_mode:
             manager.update_config_file_ownership()
 
-    if not results['header']:
+    if not results['conf_header']:
         changed = True
         change_msg.append("updated header")
         if not module.check_mode:
             manager.update_config_file_header()
 
-    if not all(results['contents'].values()):
+    if not all(results['conf_contents'].values()):
         changed = True
-        content_modules = [m for m, ok in results['contents'].items() if not ok]
+        content_modules = [m for m, ok in results['conf_contents'].items() if not ok]
         change_msg.append(f"synchronized modules: {', '.join(content_modules)}")
         
         if not module.check_mode:
             manager.update_config_file_contents()
 
-    to_unload = [m for m, is_unloaded in results['unloaded'].items() if not is_unloaded]
+    to_unload = [m for m, is_unloaded in results['module_unloaded'].items() if not is_unloaded]
 
     if to_unload:
         changed = True

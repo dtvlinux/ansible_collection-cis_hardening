@@ -103,21 +103,21 @@ def run_module():
 
     path = module.params['path'].rstrip('/')
     device = module.params['device']
-    temp_mnt = f"/mnt/migration_{os.path.basename(path)}"
+    temp_mnt = f"/mnt/sync_{os.path.basename(path)}"
 
     if not os.path.exists(path) or not os.path.isdir(path):
         result['message'] = f"Source path {path} does not exist. Created directory for future mount."
         if not module.check_mode:
-            os.makedirs(path, mode=0o755)
+            os.makedirs(path, mode=0o750)
         module.exit_json(**result)
 
     volatile_paths = ['/tmp', '/dev/shm']
     if path in volatile_paths:
-        result['message'] = f"Skipping data migration for volatile path: {path}"
+        result['message'] = f"Skipping data sync for volatile path: {path}"
         module.exit_json(**result)
 
     if not os.listdir(path):
-        result['message'] = f"Source path {path} is empty. No data to migrate."
+        result['message'] = f"Source path {path} is empty. No data to sync."
         module.exit_json(**result)
 
     if module.check_mode:
@@ -150,9 +150,9 @@ def run_module():
         
         if rc_rs == 0:
             result['changed'] = True
-            result['message'] = f"Successfully migrated data from {path} to {device}"
+            result['message'] = f"Successfully synced data from {path} to {device}"
         else:
-            module.fail_json(msg=f"Rsync migration failed: {err_rs}")
+            module.fail_json(msg=f"Rsync failed: {err_rs}")
 
     finally:
         module.run_command(['umount', temp_mnt])

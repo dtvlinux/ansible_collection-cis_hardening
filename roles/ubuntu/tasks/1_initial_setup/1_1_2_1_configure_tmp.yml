@@ -1,0 +1,79 @@
+---
+- name: 1.1.2.1.1 | Ensure /tmp is a separate partition | Task block
+  notify: Reboot system
+  tags:
+    - cis_1_1_2_1_1
+    - cis_control_4_8
+    - cis_implementation_group_2
+    - cis_implementation_group_3
+    - cis_level_1_server
+    - cis_level_1_workstation
+  block:
+    - name: 1.1.2.1.1 | Ensure /tmp is a separate partition | Volume group
+      community.general.lvg:
+        vg: "{{ cis_1_1_2_vg_name }}"
+        pvs: "{{ cis_1_1_2_disk_path }}"
+
+    - name: 1.1.2.1.1 | Ensure /tmp is a separate partition | Logical volume
+      community.general.lvol:
+        vg: "{{ cis_1_1_2_vg_name }}"
+        lv: "{{ cis_1_1_2_1_lv_name }}"
+        size: "{{ cis_1_1_2_1_lv_size }}"
+
+    - name: 1.1.2.1.1 | Ensure /tmp is a separate partition | Filesystem
+      community.general.filesystem:
+        fstype: "{{ cis_1_1_2_1_fs_type }}"
+        dev: "/dev/{{ cis_1_1_2_vg_name }}/{{ cis_1_1_2_1_lv_name }}"
+
+- name: "1.1.2.1.[2,3,4] | Ensure [nosuid,nodev,noexec] option set on /tmp partition | fstab"
+  ansible.posix.mount:
+    path: /tmp
+    src: "/dev/{{ cis_1_1_2_vg_name }}/{{ cis_1_1_2_1_lv_name }}"
+    fstype: "{{ cis_1_1_2_1_fs_type }}"
+    opts: "{{ cis_1_1_2_1_fs_options }}"
+    dump: "{{ cis_1_1_2_1_fs_dump }}"
+    passno: "{{ cis_1_1_2_1_fs_passno }}"
+    state: present
+    backup: yes
+  notify: Remount /tmp partition
+  tags:
+    - cis_1_1_2_1_2
+    - cis_1_1_2_1_3
+    - cis_1_1_2_1_4
+    - cis_control_3_3
+    - cis_control_4_8
+    - cis_implementation_group_1
+    - cis_implementation_group_2
+    - cis_implementation_group_3
+    - cis_level_1_server
+    - cis_level_1_workstation
+
+# - name: 1.1.2.1.1 | Ensure /tmp is a separate partition | Migrate data
+#   dtvlinux.cis_hardening.migrate_filesystem_partitions:
+#     path: "{{ item.path }}"
+#     device: "/dev/{{ cis_1_1_2_vg_name }}/{{ lookup('vars', item.prefix + '_lv_name') }}"
+#   when:
+#     - item.migrate
+#     - item.path != '/dev/shm'
+#     - filesystem_res.changed
+
+# - name: "1.1.2.1.[2,3,4] | Ensure nosuid,nodev,noexec options set on /tmp partition | fstab"
+#   ansible.builtin.lineinfile:
+#     path: /etc/fstab
+#     regexp: '^[^#].*\s+/tmp\s+'
+#     line: >-
+#       {%- if item.path == '/dev/shm' -%}
+#       tmpfs /dev/shm tmpfs rw,nosuid,nodev,noexec,inode64 0 0
+#       {%- else -%}
+#       /dev/{{ cis_1_1_2_vg_name }}/{{ cis_1_1_2_1_lv_name }} }}
+#       /tmp
+#       {{ cis_1_1_2_1_fs_type }}
+#       {{ cis_1_1_2_1_fs_options }}
+#       {{ cis_1_1_2_1_fs_dump }}
+#       {{ cis_1_1_2_1_fs_passno }}
+#       {%- endif -%}
+#     state: present  
+#     backup: yes
+#   register: current_fstab_change
+#   notify: Remount partition
+

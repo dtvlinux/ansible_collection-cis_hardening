@@ -1,5 +1,5 @@
 ---
-- name: cis_hardening_ubuntu_reboot_system
+- name: Reboot system
   ansible.builtin.reboot:
     msg: Rebooting to apply CIS hardening changes
     connect_timeout: 5
@@ -7,3 +7,35 @@
     pre_reboot_delay: 0
     post_reboot_delay: 30
     test_command: uptime
+
+- name: Remount /tmp partition
+  vars:
+    mapper_dev: "/dev/mapper/{{ cis_1_1_2_vg_name | replace('-', '--') }}-{{ cis_1_1_2_1_lv_name | replace('-', '--') }}"
+    friendly_dev: "/dev/{{ cis_1_1_2_vg_name }}/{{ cis_1_1_2_1_lv_name }}"
+  when:
+    - ansible_facts.mounts | selectattr('mount', 'equalto', '/tmp') | list | length > 0
+    - (
+        ansible_facts.mounts | selectattr('mount', 'equalto', '/tmp') | first
+      ).device in [
+        mapper_dev,
+        friendly_dev,
+      ]
+  ansible.posix.mount:
+    path: /tmp
+    state: remounted
+
+- name: Remount /home partition
+  vars:
+    mapper_dev: "/dev/mapper/{{ cis_1_1_2_vg_name | replace('-', '--') }}-{{ cis_1_1_2_3_lv_name | replace('-', '--') }}"
+    friendly_dev: "/dev/{{ cis_1_1_2_vg_name }}/{{ cis_1_1_2_3_lv_name }}"
+  when:
+    - ansible_facts.mounts | selectattr('mount', 'equalto', '/home') | list | length > 0
+    - (
+        ansible_facts.mounts | selectattr('mount', 'equalto', '/home') | first
+      ).device in [
+        mapper_dev,
+        friendly_dev,
+      ]
+  ansible.posix.mount:
+    path: /home
+    state: remounted

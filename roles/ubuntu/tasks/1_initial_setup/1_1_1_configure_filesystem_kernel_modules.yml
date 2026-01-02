@@ -1,162 +1,154 @@
 ---
 - name: 1.1.1.1 | Ensure cramfs kernel module is not available
+  when: cis_1_1_1_1_apply
   dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
-    config_file: "{{ cis_rule_1_1_1_1_conf }}"
+    config_file: "{{ cis_1_1_1_1_conf }}"
     modules: cramfs
-  when: cis_rule_1_1_1_1_apply
   tags:
-    - cis_rule_1_1_1_1
-    - cis_level1_server
-    - cis_level1_workstation
+    - cis_1_1_1_1
     - cis_control_4_8
-    - cis_ig_2
-    - cis_ig_3
-    - nist_800_53_cm_7
-    - stig_v230498
+    - cis_implementation_group_2
+    - cis_implementation_group_3
+    - cis_level_1_server
+    - cis_level_1_workstation
 
 - name: 1.1.1.2 | Ensure freevxfs kernel module is not available
+  when: cis_1_1_1_2_apply
   dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
-    config_file: "{{ cis_rule_1_1_1_2_conf }}"
+    config_file: "{{ cis_1_1_1_2_conf }}"
     modules: freevxfs
-  when: cis_rule_1_1_1_2_apply
   tags:
-    - cis_rule_1_1_1_2
-    - cis_level1_server
-    - cis_level1_workstation
+    - cis_1_1_1_2
     - cis_control_4_8
-    - cis_ig_2
-    - cis_ig_3
-    - nist_800_53_cm_7
+    - cis_implementation_group_2
+    - cis_implementation_group_3
+    - cis_level_1_server
+    - cis_level_1_workstation
 
 - name: 1.1.1.3 | Ensure hfs kernel module is not available
+  when: cis_1_1_1_3_apply
   dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
-    config_file: "{{ cis_rule_1_1_1_3_conf }}"
+    config_file: "{{ cis_1_1_1_3_conf }}"
     modules: hfs
-  when: cis_rule_1_1_1_3_apply
   tags:
-    - cis_rule_1_1_1_3
-    - cis_level1_server
-    - cis_level1_workstation
+    - cis_1_1_1_3
     - cis_control_4_8
-    - cis_ig_2
-    - cis_ig_3
-    - nist_800_53_cm_7
+    - cis_implementation_group_2
+    - cis_implementation_group_3
+    - cis_level_1_server
+    - cis_level_1_workstation
 
 - name: 1.1.1.4 | Ensure hfsplus kernel module is not available
+  when: cis_1_1_1_4_apply
   dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
-    config_file: "{{ cis_rule_1_1_1_4_conf }}"
+    config_file: "{{ cis_1_1_1_4_conf }}"
     modules: hfsplus
-  when: cis_rule_1_1_1_4_apply
   tags:
-    - cis_rule_1_1_1_4
-    - cis_level1_server
-    - cis_level1_workstation
+    - cis_1_1_1_4
     - cis_control_4_8
-    - cis_ig_2
-    - cis_ig_3
-    - nist_800_53_cm_7
+    - cis_implementation_group_2
+    - cis_implementation_group_3
+    - cis_level_1_server
+    - cis_level_1_workstation
 
 - name: 1.1.1.5 | Ensure jffs2 kernel module is not available
+  when: cis_1_1_1_5_apply
   dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
-    config_file: "{{ cis_rule_1_1_1_5_conf }}"
+    config_file: "{{ cis_1_1_1_5_conf }}"
     modules: jffs2
-  when: cis_rule_1_1_1_5_apply
   tags:
-    - cis_rule_1_1_1_5
-    - cis_level1_server
-    - cis_level1_workstation
+    - cis_1_1_1_5
     - cis_control_4_8
-    - cis_ig_2
-    - cis_ig_3
-    - nist_800_53_cm_7
+    - cis_level_1_server
+    - cis_level_1_workstation
+    - cis_implementation_group_2
+    - cis_implementation_group_3
+    - cis_level_1_server
+    - cis_level_1_workstation
 
 - name: 1.1.1.6 | Ensure overlayfs kernel module is not available
+  when: cis_1_1_1_6_apply
   dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
-    config_file: "{{ cis_rule_1_1_1_6_conf }}"
+    config_file: "{{ cis_1_1_1_6_conf }}"
     modules: overlayfs
-  when: cis_rule_1_1_1_6_apply
   tags:
-    - cis_rule_1_1_1_6
+    - cis_1_1_1_6
+    - cis_control_4_8
+    - cis_implementation_group_2
+    - cis_implementation_group_3
     - cis_level2_server
     - cis_level2_workstation
-    - cis_control_4_8
-    - cis_ig_2
-    - cis_ig_3
-    - nist_800_53_cm_7
 
 - name: 1.1.1.7 | Ensure squashfs kernel module is not available
+  when: cis_1_1_1_7_apply
   dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
-    config_file: "{{ cis_rule_1_1_1_7_conf }}"
+    config_file: "{{ cis_1_1_1_7_conf }}"
     modules: squashfs
-  when: cis_rule_1_1_1_7_apply
   tags:
-    - cis_rule_1_1_1_7
+    - cis_1_1_1_7
+    - cis_control_4_8
+    - cis_implementation_group_2
+    - cis_implementation_group_3
     - cis_level2_server
     - cis_level2_workstation
-    - cis_control_4_8
-    - cis_ig_2
-    - cis_ig_3
-    - nist_800_53_cm_7
 
 - name: 1.1.1.8 | Ensure udf kernel module is not available
+  when: cis_1_1_1_8_apply
   dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
-    config_file: "{{ cis_rule_1_1_1_8_conf }}"
+    config_file: "{{ cis_1_1_1_8_conf }}"
     modules: udf
-  when: cis_rule_1_1_1_8_apply
   tags:
-    - cis_rule_1_1_1_8
+    - cis_1_1_1_8
+    - cis_control_4_8
+    - cis_implementation_group_2
+    - cis_implementation_group_3
     - cis_level2_server
     - cis_level2_workstation
-    - cis_control_4_8
-    - cis_ig_2
-    - cis_ig_3
-    - nist_800_53_cm_7
 
 - name: 1.1.1.9 | Ensure usb-storage kernel module is not available
+  when: cis_1_1_1_9_apply
   dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
-    config_file: "{{ cis_rule_1_1_1_9_conf }}"
+    config_file: "{{ cis_1_1_1_9_conf }}"
     modules: usb-storage
-  when: cis_rule_1_1_1_9_apply
   tags:
-    - cis_rule_1_1_1_9
-    - cis_level1_server
-    - cis_level2_workstation
+    - cis_1_1_1_9
     - cis_control_10_3
-    - cis_ig_1
-    - cis_ig_2
-    - cis_ig_3
-    - nist_800_53_si_3
+    - cis_implementation_group_1
+    - cis_implementation_group_2
+    - cis_implementation_group_3
+    - cis_level_1_server
+    - cis_level2_workstation
 
 - name: "1.1.1.10 | Ensure unused filesystems kernel modules are not available | Set fact cis_1_1_1_10_modules"
-  set_fact:
+  when: cis_1_1_1_10_apply
+  ansible.builtin.set_fact:
     cis_1_1_1_10_modules: >-
       {%- set module_list = [] -%}
-      {%- for var_name in q('ansible.builtin.varnames', '^cis_rule_1_1_1_10_module_') -%}
+      {%- for var_name in q('ansible.builtin.varnames', '^cis_1_1_1_10_module_') -%}
         {%- if lookup('ansible.builtin.vars', var_name) | bool -%}
-          {%- set _ = module_list.append(var_name | replace('cis_rule_1_1_1_10_module_', '')) -%}
+          {%- set _ = module_list.append(var_name | replace('cis_1_1_1_10_module_', '')) -%}
         {%- endif -%}
       {%- endfor -%}
       {{ module_list | list }}
-  when: cis_rule_1_1_1_10_apply
   tags: 
-    - cis_rule_1_1_1_10
-    - cis_level1_server
-    - cis_level1_workstation
+    - cis_1_1_1_10
     - cis_control_4_8
-    - cis_ig_2
-    - cis_ig_3
+    - cis_implementation_group_2
+    - cis_implementation_group_3
+    - cis_level_1_server
+    - cis_level_1_workstation
 
 - name: "1.1.1.10 | Ensure unused filesystems kernel modules are not available"
-  dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
-    config_file: "{{ cis_rule_1_1_1_10_conf }}"
-    modules: "{{ cis_1_1_1_10_modules }}"
   when: 
     - cis_1_1_1_10_modules is defined
     - cis_1_1_1_10_modules | length > 0
+  dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
+    config_file: "{{ cis_1_1_1_10_conf }}"
+    modules: "{{ cis_1_1_1_10_modules }}"
   tags:
-    - cis_rule_1_1_1_10
-    - cis_level1_server
-    - cis_level1_workstation
+    - cis_1_1_1_10
     - cis_control_4_8
-    - cis_ig_2
-    - cis_ig_3
+    - cis_implementation_group_2
+    - cis_implementation_group_3
+    - cis_level_1_server
+    - cis_level_1_workstation

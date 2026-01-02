@@ -1,0 +1,86 @@
+---
+- name: 1.1.2.3.1 | Ensure /home is a separate partition | Task block
+  tags:
+    - cis_1_1_2_3_1
+    - cis_implementation_group_1
+    - cis_implementation_group_2
+    - cis_implementation_group_3
+    - cis_level_2_server
+    - cis_level_2_workstation
+  notify: Reboot system
+  block:
+    - name: 1.1.2.3.1 | Ensure /home is a separate partition | Logical volume
+      community.general.lvol:
+        vg: "{{ cis_1_1_2_vg_name }}"
+        lv: "{{ cis_1_1_2_3_lv_name }}"
+        size: "{{ cis_1_1_2_3_lv_size }}"
+
+    - name: 1.1.2.3.1 | Ensure /home is a separate partition | Filesystem
+      community.general.filesystem:
+        fstype: "{{ cis_1_1_2_3_fs_type }}"
+        dev: "/dev/{{ cis_1_1_2_vg_name }}/{{ cis_1_1_2_3_lv_name }}"
+      register: home_filesystem
+
+    - name: 1.1.2.3.1 | Ensure /home is a separate partition | Sync data
+      when: home_filesystem.changed
+      dtvlinux.cis_hardening.sync_filesystem_partitions:
+        path: /home
+        device: "/dev/{{ cis_1_1_2_vg_name }}/{{ cis_1_1_2_3_lv_name }}"
+
+- name: 1.1.2.3.[2,3] | Ensure [nosuid,nodev] option set on /home partition | LVM fact update
+  ansible.builtin.setup:
+    filter: "ansible_lvm"
+  tags:
+    - cis_1_1_2_3_2
+    - cis_1_1_2_3_3
+    - cis_control_3_3
+    - cis_implementation_group_1
+    - cis_implementation_group_2
+    - cis_implementation_group_3
+    - cis_level_1_server
+    - cis_level_1_workstation
+
+- name: "1.1.2.3.[2,3] | Ensure [nosuid,nodev] option set on /home partition | fstab"
+  when: cis_1_1_2_3_lv_name in (ansible_facts.lvm.lvs | default({}))
+  ansible.posix.mount:
+    path: /home
+    src: "/dev/{{ cis_1_1_2_vg_name }}/{{ cis_1_1_2_3_lv_name }}"
+    fstype: "{{ cis_1_1_2_3_fs_type }}"
+    opts: "{{ cis_1_1_2_3_fs_options }}"
+    dump: "{{ cis_1_1_2_3_fs_dump }}"
+    passno: "{{ cis_1_1_2_3_fs_passno }}"
+    state: present
+    backup: yes
+  notify: Remount /home partition
+  tags:
+    - cis_1_1_2_3_2
+    - cis_1_1_2_3_3
+    - cis_control_3_3
+    - cis_implementation_group_1
+    - cis_implementation_group_2
+    - cis_implementation_group_3
+    - cis_level_1_server
+    - cis_level_1_workstation
+
+
+
+# - name: "1.1.2.1.[2,3,4] | Ensure nosuid,nodev,noexec options set on /tmp partition | fstab"
+#   ansible.builtin.lineinfile:
+#     path: /etc/fstab
+#     regexp: '^[^#].*\s+/tmp\s+'
+#     line: >-
+#       {%- if item.path == '/dev/shm' -%}
+#       tmpfs /dev/shm tmpfs rw,nosuid,nodev,noexec,inode64 0 0
+#       {%- else -%}
+#       /dev/{{ cis_1_1_2_vg_name }}/{{ cis_1_1_2_1_lv_name }} }}
+#       /tmp
+#       {{ cis_1_1_2_1_fs_type }}
+#       {{ cis_1_1_2_1_fs_options }}
+#       {{ cis_1_1_2_1_fs_dump }}
+#       {{ cis_1_1_2_1_fs_passno }}
+#       {%- endif -%}
+#     state: present  
+#     backup: yes
+#   register: current_fstab_change
+#   notify: Remount partition
+

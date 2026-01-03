@@ -8,7 +8,7 @@ from __future__ import annotations
 
 DOCUMENTATION = r'''
 ---
-module: configure_filesystem_kernel_modules
+module: disable_modules
 short_description: Disable filesystem kernel modules
 author:
   - Michael Lucraft (@dtvlinux)
@@ -36,17 +36,17 @@ options:
 
 EXAMPLES = r'''
 - name: Specify single module for disabling
-  dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
+  dtvlinux.cis_hardening.disable_modules:
     modules: cramfs
 
 - name: Specifiy multiple modules to be disabled
-  dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
+  dtvlinux.cis_hardening.disable_modules:
     modules:
       - cramfs
       - freevxfs
 
 - name: Specify a custom configuration file
-  dtvlinux.cis_hardening.configure_filesystem_kernel_modules:
+  dtvlinux.cis_hardening.disable_modules:
     config_file: /etc/modprobe.d/cramfs.conf
     modules: cramfs
 '''
@@ -89,11 +89,10 @@ validation_results:
       type: dict
 '''
 
+from ansible.module_utils.basic import AnsibleModule
 import os
 
-from ansible.module_utils.basic import AnsibleModule
-
-class ConfigureFilesystemKernelModules:
+class DisableModules:
     FILE_HEADER = '# Managed by Ansible collection dtvlinux.cis_hardening'
     FILE_MODE   = 0o644
     FILE_UID    = 0
@@ -248,7 +247,7 @@ def main():
         supports_check_mode=True,
     )
 
-    manager  = ConfigureFilesystemKernelModules(module)
+    manager  = DisableModules(module)
     skip_msg = manager.filter_modules()
     results  = manager.validate_current_state()
     

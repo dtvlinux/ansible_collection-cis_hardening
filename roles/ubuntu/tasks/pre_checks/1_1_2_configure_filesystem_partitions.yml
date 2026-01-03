@@ -1,0 +1,26 @@
+- name: 1.1.2 | Configure filesystem partitions | Resolve links
+  ansible.builtin.stat:
+    path: "{{ cis_1_1_2_disk_path }}"
+  register: disk_stat
+
+- name: 1.1.2 | | Configure filesystem partitions | Calculate and verify required disk space
+  vars:
+    target_disk_name: "{{ disk_stat.stat.lnk_source | default(disk_stat.stat.path) | basename }}"
+    required_sizes:
+      - "{{ (cis_1_1_2_1_apply | bool) | ternary(cis_1_1_2_1_lv_size, '0') }}"
+      - "{{ (cis_1_1_2_3_apply | bool) | ternary(cis_1_1_2_3_lv_size, '0') }}"
+      - "{{ (cis_1_1_2_4_apply | bool) | ternary(cis_1_1_2_4_lv_size, '0') }}"
+      - "{{ (cis_1_1_2_5_apply | bool) | ternary(cis_1_1_2_5_lv_size, '0') }}"
+      - "{{ (cis_1_1_2_6_apply | bool) | ternary(cis_1_1_2_6_lv_size, '0') }}"
+      - "{{ (cis_1_1_2_7_apply | bool) | ternary(cis_1_1_2_7_lv_size, '0') }}"
+    total_required_bytes: "{{ required_sizes | map('ansible.builtin.human_to_bytes') | sum }}"
+    available_bytes: "{{ ansible_facts['devices'][target_disk_name]['size'] | ansible.builtin.human_to_bytes }}"
+  when: cis_1_1_2_apply
+  ansible.builtin.assert:
+    that:
+      - available_bytes | float >= total_required_bytes | float
+    fail_msg: >
+      Target disk {{ cis_1_1_2_disk_path }} is too small. Use a larger disk or reduce declared LV sizes.
+      Required: {{ total_required_bytes | ansible.builtin.human_readable }}
+      Available: {{ available_bytes | ansible.builtin.human_readable }}
+    success_msg: "Disk space check passed for {{ cis_1_1_2_disk_path }}."

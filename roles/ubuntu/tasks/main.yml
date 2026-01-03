@@ -5,6 +5,11 @@
     ansible_facts["distribution_major_version"] == '24'
   tags: cis_hardening_ubuntu
   block:
+    - name: Pre Checks | 1.1.2 | Configure filesystem partitions
+      ansible.builtin.import_tasks:
+        file: pre_checks/1_1_2_configure_filesystem_partitions.yml
+      tags: always
+
     # Can take along time to run on shutdown and even hangs interfering with reboot tasks
     - name: Stop unattended-upgrades service
       ansible.builtin.service:

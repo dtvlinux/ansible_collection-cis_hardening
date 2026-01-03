@@ -1,0 +1,59 @@
+---
+- name: "{{ task_name_prefix1 }} | Task block"
+  notify: Reboot system
+  block:
+    - name: "{{ task_name_prefix1 }} | Volume group"
+      community.general.lvg:
+        vg: "{{ cis_1_1_2_vg_name }}"
+        pvs: "{{ disk_path }}"
+
+    - name: "{{ task_name_prefix1 }} | Logical volume"
+      community.general.lvol:
+        vg: "{{ cis_1_1_2_vg_name }}"
+        lv: "{{ lv_name }}"
+        size: "{{ lv_size }}"
+
+    - name: "{{ task_name_prefix1 }} | Filesystem"
+      community.general.filesystem:
+        fstype: "{{ fs_type }}"
+        dev: "{{ lv_path }}"
+      register: filesystem
+    
+    - name: "{{ task_name_prefix1 }} | Sync data"
+      when:
+        - filesystem.changed
+        - sync
+      dtvlinux.cis_hardening.sync_filesystem_partitions:
+        path: "{{ path }}"
+        device: "{{ lv_path }}"
+
+- name: "{{ task_name_prefix2 }} | LVM fact update"
+  ansible.builtin.setup:
+    filter: "ansible_lvm"
+
+- name: "{{ task_name_prefix2 }} | fstab"
+  when: lv_name in ansible_facts.lvm.lvs
+  ansible.posix.mount:
+    path: "{{ path }}"
+    src: "{{ lv_path }}"
+    fstype: "{{ fs_type }}"
+    opts: "{{ fs_options }}"
+    dump: "{{ fs_dump }}"
+    passno: "{{ fs_passno }}"
+    state: present
+    backup: yes
+  register: fstab_entry
+
+- name: "{{ task_name_prefix2 }} | Remount"
+  when:
+    - fstab_entry.changed
+    - ansible_facts.mounts | selectattr('mount', 'equalto', path) | list | length > 0
+    - (
+        ansible_facts.mounts | selectattr('mount', 'equalto', path) | first
+      ).device in [
+        mapper_path,
+        lv_path,
+      ]
+  ansible.posix.mount:
+    path: "{{ path }}"
+    state: remounted

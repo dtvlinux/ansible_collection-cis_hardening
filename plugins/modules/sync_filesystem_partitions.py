@@ -111,11 +111,6 @@ def run_module():
             os.makedirs(path, mode=0o750)
         module.exit_json(**result)
 
-    volatile_paths = ['/tmp', '/dev/shm']
-    if path in volatile_paths:
-        result['message'] = f"Skipping data sync for volatile path: {path}"
-        module.exit_json(**result)
-
     if not os.listdir(path):
         result['message'] = f"Source path {path} is empty. No data to sync."
         module.exit_json(**result)

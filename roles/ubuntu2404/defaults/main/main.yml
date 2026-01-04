@@ -1,0 +1,161 @@
+---
+# ------------------------------------------------------------------------------
+# CIS Hardening Variables - Hierarchy & Logic
+# ------------------------------------------------------------------------------
+# This role uses a tiered enablement strategy (Gatekeeper Pattern).
+# 
+# 1. Section Master (e.g., _initial_setup_apply)
+# 2. Subsection    (e.g., _filesystem_apply)
+# 3. Individual    (e.g., _cramfs_apply)
+#
+# LOGIC: A task only executes if ALL toggles in its hierarchy are set to 'true'.
+# Setting a higher-level toggle to 'false' will skip all nested tasks, regardless
+# of their individual settings. Setting a higher-level toggle to 'true' allows
+# individual rules to retain final control over their own execution.
+# ------------------------------------------------------------------------------
+
+# Section 1 - Initial Setup
+cis_ubuntu2404_initial_setup_apply: true
+
+# 1.1 - Filesystem
+cis_ubuntu2404_filesystem_apply: true
+
+# 1.1.1 - Configure Filesystem Kernel Modules
+cis_ubuntu2404_filesystem_modules_apply: true
+
+# 1.1.1.1 - Ensure cramfs kernel module is not available
+cis_ubuntu2404_cramfs_apply: true
+cis_ubuntu2404_cramfs_conf: /etc/modprobe.d/cis_cramfs.conf
+
+# 1.1.1.2 - Ensure freevxfs kernel module is not available
+cis_ubuntu2404_freevxfs_apply: true
+cis_ubuntu2404_freevxfs_conf: /etc/modprobe.d/cis_freevxfs.conf
+
+# 1.1.1.3 - Ensure hfs kernel module is not available
+cis_ubuntu2404_hfs_apply: true
+cis_ubuntu2404_hfs_conf: /etc/modprobe.d/cis_hfs.conf
+
+# 1.1.1.4 - Ensure hfsplus kernel module is not available
+cis_ubuntu2404_hfsplus_apply: true
+cis_ubuntu2404_hfsplus_conf: /etc/modprobe.d/cis_hfsplus.conf
+
+# 1.1.1.5 - Ensure jffs2 kernel module is not available
+cis_ubuntu2404_jffs2_apply: true
+cis_ubuntu2404_jffs2_conf: /etc/modprobe.d/cis_jffs2.conf
+
+# 1.1.1.6 - Ensure overlayfs kernel module is not available
+cis_ubuntu2404_overlayfs_apply: true
+cis_ubuntu2404_overlayfs_conf: /etc/modprobe.d/cis_overlayfs.conf
+
+# 1.1.1.7 - Ensure squashfs kernel module is not available
+cis_ubuntu2404_squashfs_apply: true
+cis_ubuntu2404_squashfs_conf: /etc/modprobe.d/cis_squashfs.conf
+
+# 1.1.1.8 - Ensure udf kernel module is not available
+cis_ubuntu2404_udf_apply: true
+cis_ubuntu2404_udf_conf: /etc/modprobe.d/cis_udf.conf
+
+# 1.1.1.9 - Ensure usb-storage kernel module is not available
+cis_ubuntu2404_usb_storage_apply: true
+cis_ubuntu2404_usb_storage_conf: /etc/modprobe.d/cis_usb_storage.conf
+
+# 1.1.1.10 - Ensure unused filesystems kernel modules are not available
+cis_ubuntu2404_unused_filesystems_apply: false
+cis_ubuntu2404_unused_filesystems_conf: /etc/modprobe.d/cis_unused_filesystems.conf
+cis_ubuntu2404_unused_filesystems_afs: false
+cis_ubuntu2404_unused_filesystems_ceph: false
+cis_ubuntu2404_unused_filesystems_exfat: false
+cis_ubuntu2404_unused_filesystems_ext: false
+cis_ubuntu2404_unused_filesystems_fat: false
+cis_ubuntu2404_unused_filesystems_fscache: false
+cis_ubuntu2404_unused_filesystems_fuse: false
+cis_ubuntu2404_unused_filesystems_gfs2: false
+cis_ubuntu2404_unused_filesystems_nfs_common: false
+cis_ubuntu2404_unused_filesystems_nfsd: false
+cis_ubuntu2404_unused_filesystems_smbfs_common: false
+
+# Section 1.1.2 - WARNING
+# ----------------------------------------------------------------------------
+# Partitioning is a critical system architecture task that ensures resource 
+# isolation and security compliance. While partitioning is ideally performed 
+# during initial OS deployment, this role facilitates post-deployment 
+# alignment by utilizing Logical Volume Management (LVM) on a dedicated 
+# block device.
+#
+# ARCHITECTURE:
+# By default, this role utilizes 'ext4' to maximize compatibility and simplify 
+# online resizing operations. The 'disk_device' variable defines the source 
+# physical volume; this value is processed only during initial Volume Group 
+# initialization and is ignored once the VG is active.
+#
+# MIGRATION WARNING:
+# Enabling 'apply' on existing partitions will trigger a data migration into 
+# this role's LVM management framework. If you have existing partitions 
+# outside of this VG that you wish to maintain manually, set 'apply' to 
+# 'false'. Data-destructive operations may be performed; ensure verified backups 
+# are available and execute during authorized maintenance windows only as new
+# VG, LV or filesystem creations will trigger a ** REBOOT **.
+# ----------------------------------------------------------------------------
+
+# 1.1.2 - Configure Filesystem Partitions
+cis_ubuntu2404_filesystem_partitions_apply: true
+cis_ubuntu2404_filesystem_partitions_device: /dev/disk/azure/scsi1/lun0
+cis_ubuntu2404_filesystem_partitions_vgname: vg_hardening
+
+# 1.1.2.1 - Configure /tmp
+cis_ubuntu2404_filesystem_tmp_apply: true
+cis_ubuntu2404_filesystem_tmp_lvol: lv_tmp
+cis_ubuntu2404_filesystem_tmp_size: 4G
+cis_ubuntu2404_filesystem_tmp_type: ext4
+cis_ubuntu2404_filesystem_tmp_options: defaults,rw,nosuid,nodev,noexec,relatime
+cis_ubuntu2404_filesystem_tmp_dump: 0
+cis_ubuntu2404_filesystem_tmp_passno: 0
+
+# 1.1.2.2 - Configure /dev/shm
+cis_ubuntu2404_filesystem_dev_shm_apply: true
+cis_ubuntu2404_filesystem_dev_shm_options: rw,nosuid,nodev,noexec,relatime
+
+# 1.1.2.3 - Configure /home
+cis_ubuntu2404_filesystem_home_apply: true
+cis_ubuntu2404_filesystem_home_lvol: lv_home
+cis_ubuntu2404_filesystem_home_size: 2G
+cis_ubuntu2404_filesystem_home_type: ext4
+cis_ubuntu2404_filesystem_home_options: defaults,rw,nosuid,nodev,relatime
+cis_ubuntu2404_filesystem_home_dump: 0
+cis_ubuntu2404_filesystem_home_passno: 0
+
+# 1.1.2.4 - Configure /var
+cis_ubuntu2404_filesystem_var_apply: true
+cis_ubuntu2404_filesystem_var_lvol: lv_var
+cis_ubuntu2404_filesystem_var_size: 8G
+cis_ubuntu2404_filesystem_var_type: ext4
+cis_ubuntu2404_filesystem_var_options: defaults,rw,nosuid,nodev,relatime
+cis_ubuntu2404_filesystem_var_dump: 0
+cis_ubuntu2404_filesystem_var_passno: 0
+
+# 1.1.2.5 - Configure /var/tmp
+cis_ubuntu2404_filesystem_var_tmp_apply: true
+cis_ubuntu2404_filesystem_var_tmp_lvol: lv_var_tmp
+cis_ubuntu2404_filesystem_var_tmp_size: 2G
+cis_ubuntu2404_filesystem_var_tmp_type: ext4
+cis_ubuntu2404_filesystem_var_tmp_options: defaults,rw,nosuid,nodev,noexec,relatime
+cis_ubuntu2404_filesystem_var_tmp_dump: 0
+cis_ubuntu2404_filesystem_var_tmp_passno: 0
+
+# 1.1.2.6 - Configure /var/log
+cis_ubuntu2404_filesystem_var_log_apply: true
+cis_ubuntu2404_filesystem_var_log_lvol: lv_var_log
+cis_ubuntu2404_filesystem_var_log_size: 4G
+cis_ubuntu2404_filesystem_var_log_type: ext4
+cis_ubuntu2404_filesystem_var_log_options: defaults,rw,nosuid,nodev,noexec,relatime
+cis_ubuntu2404_filesystem_var_log_dump: 0
+cis_ubuntu2404_filesystem_var_log_passno: 0
+
+# 1.1.2.7 - Configure /var/log/audit
+cis_ubuntu2404_filesystem_var_log_audit_apply: true
+cis_ubuntu2404_filesystem_var_log_audit_lvol: lv_var_log_audit
+cis_ubuntu2404_filesystem_var_log_audit_size: 4G
+cis_ubuntu2404_filesystem_var_log_audit_type: ext4
+cis_ubuntu2404_filesystem_var_log_audit_options: defaults,rw,nosuid,nodev,noexec,relatime
+cis_ubuntu2404_filesystem_var_log_audit_dump: 0
+cis_ubuntu2404_filesystem_var_log_audit_passno: 0

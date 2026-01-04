@@ -1,11 +1,10 @@
 ---
 - name: "Import tasks for role"
-  when: >
-    ansible_facts["distribution"]               == 'Ubuntu' and
-    ansible_facts["distribution_major_version"] == '24'
-  tags: cis_hardening_ubuntu
+  when: ansible_facts['distribution_release'] == 'noble'
+  tags: cis_ubuntu2404
   block:
     - name: Pre Checks | 1.1.2 | Configure filesystem partitions
+      when: cis_ubuntu2404_filesystem_partitions_apply
       ansible.builtin.import_tasks:
         file: pre_checks/1_1_2_configure_filesystem_partitions.yml
       tags: always
@@ -19,7 +18,7 @@
       tags: always
 
     - name: 1 | Initial setup | Import tasks
-      when: cis_1_apply
+      when: cis_ubuntu2404_initial_setup_apply
       ansible.builtin.import_tasks:
         file: 1_initial_setup/main.yml
-      tags: "cis_1"
+      tags: "cis_ubuntu2404_1"

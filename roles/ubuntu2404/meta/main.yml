@@ -5,9 +5,6 @@ galaxy_info:
   license: MIT
   min_ansible_version: "2.19.0"
   platforms:
-    - name: EL
-      versions:
-        - "10"
     - name: Ubuntu
       versions:
         - noble # 24.04

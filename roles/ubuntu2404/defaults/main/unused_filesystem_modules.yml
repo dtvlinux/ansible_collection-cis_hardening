@@ -1,0 +1,12 @@
+---
+# 1.1.1.10 - Loop through modules set to true and put into list for easy parsing
+cis_ubuntu2404_unused_filesystems_module_list: >-
+  {%- set module_list = [] -%}
+  {%- for var_name in q('ansible.builtin.varnames', '^cis_ubuntu2404_unused_filesystems_') -%}
+    {%- if '_module_list' not in var_name and '_apply' not in var_name and '_conf' not in var_name -%}
+      {%- if lookup('ansible.builtin.vars', var_name) | bool -%}
+        {%- set _ = module_list.append(var_name | replace('cis_ubuntu2404_unused_filesystems_', '')) -%}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {{ module_list }}

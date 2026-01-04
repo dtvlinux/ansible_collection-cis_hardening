@@ -1,0 +1,93 @@
+- name: 1.1.2.x | Configure filesystem partitions
+  vars:
+    device: "{{ cis_ubuntu2404_filesystem_partitions_device }}"
+    vgname: "{{ cis_ubuntu2404_filesystem_partitions_vgname }}"
+  ansible.builtin.include_tasks:
+    file: 1_1_2_include_tasks.yml
+  loop:
+    - path: /tmp
+      apply: "{{ cis_ubuntu2404_filesystem_tmp_apply }}"
+      sync: false
+      task_prefix1: 1.1.2.1.1 | Ensure /tmp is a separate partition
+      task_prefix2: 1.1.2.1.[2,3,4] | Ensure [nodev,nosid,noexec] option set on /tmp partition
+      lvol: "{{ cis_ubuntu2404_filesystem_tmp_lvol }}"
+      size: "{{ cis_ubuntu2404_filesystem_tmp_size }}"
+      type: "{{ cis_ubuntu2404_filesystem_tmp_type }}"
+      opts: "{{ cis_ubuntu2404_filesystem_tmp_options }}"
+      dump: "{{ cis_ubuntu2404_filesystem_tmp_dump }}"
+      pass: "{{ cis_ubuntu2404_filesystem_tmp_passno }}"
+
+    - path: /home
+      apply: "{{ cis_ubuntu2404_filesystem_home_apply }}"
+      sync: true
+      task_prefix1: 1.1.2.3.1 | Ensure /home is a separate partition
+      task_prefix2: 1.1.2.3.[2,3] | Ensure [nodev,nosid] option set on /home partition
+      lvol: "{{ cis_ubuntu2404_filesystem_home_lvol }}"
+      size: "{{ cis_ubuntu2404_filesystem_home_size }}"
+      type: "{{ cis_ubuntu2404_filesystem_home_type }}"
+      opts: "{{ cis_ubuntu2404_filesystem_home_options }}"
+      dump: "{{ cis_ubuntu2404_filesystem_home_dump }}"
+      pass: "{{ cis_ubuntu2404_filesystem_home_passno }}"
+
+    - path: /var
+      apply: "{{ cis_ubuntu2404_filesystem_var_apply }}"
+      sync: true
+      task_prefix1: 1.1.2.4.1 | Ensure /var is a separate partition
+      task_prefix2: 1.1.2.4.[2,3] | Ensure [nodev,nosid] option set on /var partition
+      lvol: "{{ cis_ubuntu2404_filesystem_var_lvol }}"
+      size: "{{ cis_ubuntu2404_filesystem_var_size }}"
+      type: "{{ cis_ubuntu2404_filesystem_var_type }}"
+      opts: "{{ cis_ubuntu2404_filesystem_var_options }}"
+      dump: "{{ cis_ubuntu2404_filesystem_var_dump }}"
+      pass: "{{ cis_ubuntu2404_filesystem_var_passno }}"
+
+    - path: /var/tmp
+      apply: "{{ cis_ubuntu2404_filesystem_var_tmp_apply }}"
+      sync: true
+      task_prefix1: 1.1.2.5.1 | Ensure /var/tmp is a separate partition
+      task_prefix2: 1.1.2.5.[2,3,4] | Ensure [nodev,nosid,noexec] option set on /var/tmp partition
+      lvol: "{{ cis_ubuntu2404_filesystem_var_tmp_lvol }}"
+      size: "{{ cis_ubuntu2404_filesystem_var_tmp_size }}"
+      type: "{{ cis_ubuntu2404_filesystem_var_tmp_type }}"
+      opts: "{{ cis_ubuntu2404_filesystem_var_tmp_options }}"
+      dump: "{{ cis_ubuntu2404_filesystem_var_tmp_dump }}"
+      pass: "{{ cis_ubuntu2404_filesystem_var_tmp_passno }}"
+
+    - path: /var/log
+      apply: "{{ cis_ubuntu2404_filesystem_var_log_apply }}"
+      sync: true
+      task_prefix1: 1.1.2.6.1 | Ensure /var/log is a separate partition
+      task_prefix2: 1.1.2.6.[2,3,4] | Ensure [nodev,nosid,noexec] option set on /var/log partition
+      lvol: "{{ cis_ubuntu2404_filesystem_var_log_lvol }}"
+      size: "{{ cis_ubuntu2404_filesystem_var_log_size }}"
+      type: "{{ cis_ubuntu2404_filesystem_var_log_type }}"
+      opts: "{{ cis_ubuntu2404_filesystem_var_log_options }}"
+      dump: "{{ cis_ubuntu2404_filesystem_var_log_dump }}"
+      pass: "{{ cis_ubuntu2404_filesystem_var_log_passno }}"
+
+    - path: /var/log/audit
+      apply: "{{ cis_ubuntu2404_filesystem_var_log_audit_apply }}"
+      sync: true
+      task_prefix1: 1.1.2.7.1 | Ensure /var/log/audit is a separate partition
+      task_prefix2: 1.1.2.7.[2,3,4] | Ensure [nodev,nosid,noexec] option set on /var/log/audit partition
+      lvol: "{{ cis_ubuntu2404_filesystem_var_log_audit_lvol }}"
+      size: "{{ cis_ubuntu2404_filesystem_var_log_audit_size }}"
+      type: "{{ cis_ubuntu2404_filesystem_var_log_audit_type }}"
+      opts: "{{ cis_ubuntu2404_filesystem_var_log_audit_options }}"
+      dump: "{{ cis_ubuntu2404_filesystem_var_log_audit_dump }}"
+      pass: "{{ cis_ubuntu2404_filesystem_var_log_audit_passno }}"
+  loop_control:
+    loop_var: partition
+    label: "Configure {{ partition.path }}"
+  when: partition.apply
+
+- name: 1.1.2.2 | Configure /dev/shm
+  ansible.posix.mount:
+    path: /dev/shm
+    src: tmpfs
+    fstype: tmpfs
+    opts: "{{ cis_ubuntu2404_filesystem_dev_shm_options }}"
+    dump: 0
+    passno: 0
+    state: mounted
+  when: cis_ubuntu2404_filesystem_dev_shm_apply

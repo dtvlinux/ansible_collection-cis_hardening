@@ -3,18 +3,14 @@
   when: ansible_facts['distribution_release'] == 'noble'
   tags: cis_ubuntu2404
   block:
-    - name: Pre Checks | 1.1.2 | Configure filesystem partitions
-      when: cis_ubuntu2404_filesystem_partitions_apply
+    - name: Validate provided data & system state
       ansible.builtin.import_tasks:
-        file: pre_checks/1_1_2_configure_filesystem_partitions.yml
+        file: validation.yml
       tags: always
-
-    # Can take along time to run on shutdown and even hangs interfering with reboot tasks
-    - name: Stop unattended-upgrades service
-      ansible.builtin.service:
-        name: unattended-upgrades
-        state: stopped
-        enabled: false
+    
+    - name: Prepare system for CIS benchmarking tasks
+      ansible.builtin.import_tasks:
+        file: prepare_system.yml
       tags: always
 
     - name: 1 | Initial setup | Import tasks

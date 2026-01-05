@@ -2,11 +2,6 @@
 - name: "{{ partition.task_prefix1 }} | Task block"
   notify: Reboot system
   block:
-    - name: "{{ partition.task_prefix1 }} | Volume group"
-      community.general.lvg:
-        vg: "{{ vgname }}"
-        pvs: "{{ device }}"
-
     - name: "{{ partition.task_prefix1 }} | Logical volume"
       community.general.lvol:
         vg: "{{ vgname }}"
@@ -47,7 +42,7 @@
   when: >-
     fstab_entry.changed
     and
-    (ansible_facts.mounts | selectattr('mount', 'equalto', partition.path) | list | length > 0)
+    ansible_facts.mounts | selectattr('mount', 'equalto', partition.path) | list | length > 0
     and
     (
       ansible_facts.mounts | selectattr('mount', 'equalto', partition.path) | first | default({'device': 'none'})

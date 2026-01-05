@@ -48,11 +48,3 @@
   loop_control:
     label: "{{ item.rule }} | {{ item.name }}"
   when: item.apply
-  tags:
-    - cis_ubuntu2404_1_1_1
-
-- name: 1.1.2 | Configure filesystem partitions | Import tasks
-  when: cis_ubuntu2404_filesystem_partitions_apply
-  ansible.builtin.import_tasks:
-    file: 1_1_2_configure_filesystem_partitions.yml
-  tags: cis_ubuntu2404_1_1_2

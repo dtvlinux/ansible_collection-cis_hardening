@@ -1,6 +1,14 @@
 ---
 - name: 1.1 | Filesystem | Import tasks
   when: cis_ubuntu2404_filesystem_apply
-  ansible.builtin.import_tasks:
-    file: 1_1_filesystem/main.yml
-  tags: "cis_ubuntu2404_1_1"
+  tags: cis_ubuntu2404_1_1
+  block:
+    - name: 1.1.1 | Configure filesystem kernel modules | Import tasks
+      ansible.builtin.import_tasks:
+        file: 1_1_filesystem/1_1_1_configure_filesystem_kernel_modules.yml
+      tags: cis_ubuntu2404_1_1_1
+    
+    - name: 1.1.1 | Configure filesystem partitions | Import tasks
+      ansible.builtin.import_tasks:
+        file: 1_1_filesystem/1_1_2_configure_filesystem_partitions.yml
+      tags: cis_ubuntu2404_1_1_2

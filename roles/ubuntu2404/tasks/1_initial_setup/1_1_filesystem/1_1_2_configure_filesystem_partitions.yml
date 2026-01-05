@@ -1,6 +1,11 @@
-- name: 1.1.2.x | Configure filesystem partitions
+- name: 1.1.2 | Configure filesystem partitions | Volume group"
+  community.general.lvg:
+    vg: "{{ cis_ubuntu2404_filesystem_partitions_vgname }}"
+    pvs: "{{ cis_ubuntu2404_filesystem_partitions_device }}"
+  register: volume_group
+
+- name: 1.1.2 | Configure filesystem partitions | Include tasks
   vars:
-    device: "{{ cis_ubuntu2404_filesystem_partitions_device }}"
     vgname: "{{ cis_ubuntu2404_filesystem_partitions_vgname }}"
   ansible.builtin.include_tasks:
     file: 1_1_2_include_tasks.yml
@@ -79,7 +84,9 @@
   loop_control:
     loop_var: partition
     label: "Configure {{ partition.path }}"
-  when: partition.apply
+  when:
+    - volume_group is success
+    - partition.apply
 
 - name: 1.1.2.2 | Configure /dev/shm
   ansible.posix.mount:

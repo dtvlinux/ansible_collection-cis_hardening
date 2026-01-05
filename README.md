@@ -71,13 +71,18 @@ If you found the roles or modules in this collection helpful, please consider sh
 
 ## Release Notes and Roadmap
 
-See [changelog](https://github.com/ansible-collections/ansible.posix/blob/main/CHANGELOG.rst) for more details.
+See [changelog](https://github.com/dtvlinux/ansible_collection-cis_hardening/blob/main/CHANGELOG.rst) for more details.
 
 ## Related Information
 
 This document was written using the following [template](https://access.redhat.com/articles/7068606).
 
-The README has been carefully prepared to cover the [community template](https://github.com/ansible-collections/collection_template/blob/main/README.md), but if you find any problems, please file a [documentation issue](https://github.com/ansible-collections/ansible.posix/issues/new?assignees=&labels=&projects=&template=documentation_report.md).
+- [Ansible user guide](https://docs.ansible.com/projects/ansible/devel/user_guide/index.html)
+- [Ansible developer guide](https://docs.ansible.com/projects/ansible/devel/dev_guide/index.html)
+- [Ansible collections requirements](https://docs.ansible.com/projects/ansible/devel/community/collection_contributors/collection_requirements.html)
+- [Ansible community Code of Conduct](https://docs.ansible.com/projects/ansible/devel/community/code_of_conduct.html)
+- [The Bullhorn (the Ansible contributor newsletter)](https://docs.ansible.com/projects/ansible/devel/community/communication.html#the-bullhorn)
+- [Important announcements for maintainers](https://github.com/ansible-collections/news-for-maintainers)
 
 ## License Information
 

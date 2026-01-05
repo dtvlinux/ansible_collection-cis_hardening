@@ -1,0 +1,29 @@
+objects:
+  role: {}
+plugins:
+  become: {}
+  cache: {}
+  callback: {}
+  cliconf: {}
+  connection: {}
+  filter: {}
+  httpapi: {}
+  inventory: {}
+  lookup: {}
+  module:
+    disable_modules:
+      description: Disable filesystem kernel modules
+      name: disable_modules
+      namespace: ''
+      version_added: 1.0.0
+    filesystem_sync:
+      description: Synchronize filesystem data to a new device or partition
+      name: filesystem_sync
+      namespace: ''
+      version_added: 1.0.0
+  netconf: {}
+  shell: {}
+  strategy: {}
+  test: {}
+  vars: {}
+version: 0.1.1

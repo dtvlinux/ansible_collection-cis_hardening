@@ -1,0 +1,14 @@
+ancestor: null
+releases:
+  0.1.1:
+    changes:
+      major_changes:
+      - Initial deployment covering CIS Ubuntu 24.04 benmarking topic 1.1 Filesystem
+    modules:
+    - description: Disable filesystem kernel modules.
+      name: disable_modules
+      namespace: ''
+    - description: Synchronize filesystem data to a new device or partition.
+      name: filesystem_sync
+      namespace: ''
+    release_date: '2026-01-05'

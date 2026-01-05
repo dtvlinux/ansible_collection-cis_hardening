@@ -35,7 +35,7 @@ To upgrade the collection to the latest available version, run the following com
 ansible-galaxy collection install dtvlinux.cis_hardening --upgrade
 ```
 
-You can also install a specific version of the collection, for example, if you need to downgrade when something is broken in the latest version. Use the following syntax to install version 2.0.0:
+You can also install a specific version of the collection, for example, if you need to downgrade when something is broken in the latest version. Use the following syntax to install version 1.0.0:
 
 ```shell
 ansible-galaxy collection install dtvlinux.cis_hardening:==1.0.0

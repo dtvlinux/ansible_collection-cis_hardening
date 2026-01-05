@@ -33,9 +33,9 @@ options:
     type: str
   excludes:
     description:
-      - A list of rsync-style exclude patterns.
-      - If omitted, the module uses internal defaults: C(['log/*', 'tmp/*']) for C(/var) and C(['audit/*']) for C(/var/log).
-      - Set to an empty list C([]) to force a sync with no exclusions.
+      - "A list of rsync-style exclude patterns."
+      - "If omitted, the module uses internal defaults: ['log/*', 'tmp/*'] for /var and ['audit/*'] for /var/log."
+      - "Set to an empty list [] to force a sync with no exclusions."
     required: false
     type: list
     elements: str

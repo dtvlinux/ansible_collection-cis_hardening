@@ -10,5 +10,5 @@ tags: [benchmark, cis, compliance, hardening, linux, os, security, ubuntu]
 dependencies: {}
 repository: https://github.com/dtvlinux/ansible_collection-cis_hardening.git
 documentation: https://github.com/dtvlinux/ansible_collection-cis_hardening.git/README.md
-homepage: https://dtvlinux.com
+homepage: https://dtvlinux.com/dtvlinux.cis_hardening/index.html
 issues: https://github.com/dtvlinux/ansible_collection-cis_hardening/issues

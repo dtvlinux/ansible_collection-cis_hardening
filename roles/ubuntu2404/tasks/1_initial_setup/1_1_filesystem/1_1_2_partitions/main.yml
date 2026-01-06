@@ -1,12 +1,11 @@
-- name: 1.1.2 | Configure filesystem partitions | Volume group"
-  community.general.lvg:
-    vg: "{{ cis_ubuntu2404_filesystem_partitions_vgname }}"
-    pvs: "{{ cis_ubuntu2404_filesystem_partitions_device }}"
-  register: volume_group
+---
+- name: 1.1.2.1 | Configure /tmp | Import tasks
+  ansible.builtin.import_tasks:
+    file: tmp.yml
 
 - name: 1.1.2 | Configure filesystem partitions | Include tasks
   vars:
-    vgname: "{{ cis_ubuntu2404_filesystem_partitions_vgname }}"
+    vgname: "{{ cis_ubuntu2404_dedicated_disk_vgname }}"
   ansible.builtin.include_tasks:
     file: 1_1_2_include_tasks.yml
   loop:

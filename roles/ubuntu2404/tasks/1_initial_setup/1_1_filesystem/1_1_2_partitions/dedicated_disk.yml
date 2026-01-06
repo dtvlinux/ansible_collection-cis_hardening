@@ -1,0 +1,36 @@
+- name: 1.1.2 | Configure filesystem partitions | Dedicated disk tasks
+  block:
+    - name: 1.1.2 | Configure filesystem partitions | Resolve dedicated disk symlinks
+      ansible.builtin.stat:
+        path: "{{ cis_ubuntu2404_dedicated_disk_device }}"
+      register: disk_stat
+
+    - name: 1.1.2 | Configure filesystem partitions | Verify space requirements
+      vars:
+        target_disk_name: "{{ disk_stat.stat.lnk_source | default(disk_stat.stat.path) | basename }}"
+        required_sizes:
+          - "{{ (cis_ubuntu2404_dedicated_disk_tmp_apply) | ternary(cis_ubuntu2404_dedicated_disk_tmp_size, '0') }}"
+          - "{{ (cis_ubuntu2404_dedicated_disk_home_apply) | ternary(cis_ubuntu2404_dedicated_disk_home_size, '0') }}"
+          - "{{ (cis_ubuntu2404_dedicated_disk_var_apply) | ternary(cis_ubuntu2404_dedicated_disk_var_size, '0') }}"
+          - "{{ (cis_ubuntu2404_dedicated_disk_var_tmp_apply) | ternary(cis_ubuntu2404_dedicated_disk_var_tmp_size, '0') }}"
+          - "{{ (cis_ubuntu2404_dedicated_disk_var_log_apply) | ternary(cis_ubuntu2404_dedicated_disk_var_log_size, '0') }}"
+          - "{{ (cis_ubuntu2404_dedicated_disk_var_log_audit_apply) | ternary(cis_ubuntu2404_dedicated_disk_var_log_audit_size, '0') }}"
+        total_required_bytes: "{{ required_sizes | map('ansible.builtin.human_to_bytes') | sum }}"
+        available_bytes: "{{ ansible_facts['devices'][target_disk_name]['size'] | ansible.builtin.human_to_bytes }}"
+      ansible.builtin.assert:
+        that: available_bytes | float >= total_required_bytes | float
+        fail_msg: >
+          Target device {{ cis_ubuntu2404_dedicated_disk_device }} is too small. Use a larger disk or reduce declared LV sizes.
+          Required: {{ total_required_bytes | ansible.builtin.human_readable }}
+          Available: {{ available_bytes | ansible.builtin.human_readable }}
+        success_msg: "Device space check passed for {{ cis_ubuntu2404_dedicated_disk_device }}."
+
+    - name: 1.1.2 | Configure filesystem partitions | Volume group
+      community.general.lvg:
+        vg: "{{ cis_ubuntu2404_dedicated_disk_vgname }}"
+        pvs: "{{ cis_ubuntu2404_dedicated_disk_device }}"
+      register: volume_group
+
+    - name: 1.1.2 | Configure filesystem partitions | LVM fact update"
+      ansible.builtin.setup:
+        filter: "ansible_lvm"

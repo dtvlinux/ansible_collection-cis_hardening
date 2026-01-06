@@ -3,18 +3,11 @@
   when: ansible_facts['distribution_release'] == 'noble'
   tags: cis_ubuntu2404
   block:
-    - name: Validate provided data & system state
-      ansible.builtin.import_tasks:
-        file: validation.yml
-      tags: always
-    
     - name: Prepare system for CIS benchmarking tasks
       ansible.builtin.import_tasks:
         file: prepare_system.yml
       tags: always
 
     - name: 1 | Initial setup | Import tasks
-      when: cis_ubuntu2404_initial_setup_apply
       ansible.builtin.import_tasks:
         file: 1_initial_setup/main.yml
-      tags: "cis_ubuntu2404_1"

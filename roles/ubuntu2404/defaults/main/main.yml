@@ -1,6 +1,6 @@
 ---
 # Set default CIS profile
-cis_ubuntu2404_profile: level_1_server
+cis_ubuntu2404_profile: level_2_server
 
 # Allow role to reboot system
 cis_ubuntu2404_reboot: true
@@ -97,9 +97,6 @@ cis_ubuntu2404_dedicated_disk_tmp_apply: true
 cis_ubuntu2404_dedicated_disk_tmp_lvol: lv_tmp
 cis_ubuntu2404_dedicated_disk_tmp_type: ext4
 cis_ubuntu2404_dedicated_disk_tmp_size: 4G
-cis_ubuntu2404_dedicated_disk_tmp_options: defaults,rw,nosuid,nodev,noexec,relatime
-cis_ubuntu2404_dedicated_disk_tmp_dump: 0
-cis_ubuntu2404_dedicated_disk_tmp_passno: 0
 
 ##### 1.1.2.1.2 - Ensure nodev option set on /tmp partition
 cis_ubuntu2404_tmp_nodev_apply: true

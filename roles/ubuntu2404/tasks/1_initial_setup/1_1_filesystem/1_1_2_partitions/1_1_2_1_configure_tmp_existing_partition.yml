@@ -1,0 +1,32 @@
+---
+- name: 1.1.2.1.1 | Ensure /tmp is a separate partition
+  when: cis_ubuntu2404_dedicated_disk_tmp_apply
+  dtvlinux.cis_hardening.dedicated_disk_partition:
+    path: /tmp
+    device: "{{ cis_ubuntu2404_dedicated_disk_device }}"
+    vg: "{{ cis_ubuntu2404_dedicated_disk_vgname }}"
+    lv: "{{ cis_ubuntu2404_dedicated_disk_tmp_lvol }}"
+    size: "{{ cis_ubuntu2404_dedicated_disk_tmp_size }}"
+    fstype: "{{ cis_ubuntu2404_dedicated_disk_tmp_type }}"
+    sync: false
+  register: tmp_partition_result
+
+- name: 1.1.2.1.1 | Ensure /tmp is a separate partition | Refresh mount_points facts
+  ansible.builtin.setup:
+    gather_subset:
+      - mounts
+
+- name: 1.1.2.1.2 | Ensure nodev option set on /tmp partition
+  when:
+    - cis_ubuntu2404_tmp_nodev_apply
+    - "'/tmp' in ansible_facts['mount_points']"
+  vars:
+    current_opts: "{{ ansible_facts['mount_points']['/tmp'].opts | default('defaults') }}"
+  ansible.posix.mount:
+    path: /tmp
+    src: "{{ ansible_facts['mount_points']['/tmp'].src }}"
+    fstype: "{{ ansible_facts['mount_points']['/tmp'].fstype }}"
+    opts: "{{ (current_opts.split(',') + ['nodev']) | unique | join(',') }}"
+    state: mounted
+  register: tmp_fstab_nodev
+  

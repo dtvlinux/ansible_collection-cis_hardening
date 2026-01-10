@@ -1,6 +1,6 @@
 ---
 - name: 1.1.2 | Configure filesystem partitions | Dedicated disk checks
-  when: cis_ubuntu2404_dedicated_disk_apply
+  when: cis_ubuntu2404_dedicated_disk_apply | bool
   tags: always
   block:
     - name: 1.1.2 | Configure filesystem partitions | Resolve dedicated disk symlinks
@@ -24,10 +24,12 @@
         success_msg: "Space check passed for {{ cis_ubuntu2404_dedicated_disk_device }}."
 
 - name: 1.1.2 | Configure filesystem partitions | Dedicated disk include tasks
-  when: cis_ubuntu2404_dedicated_disk_apply
+  when: cis_ubuntu2404_dedicated_disk_apply | bool
   block:
     - name: 1.1.2.1 | Configure /tmp | Include dedicated disk tasks
       when: >
+        cis_ubuntu2404_dedicated_disk_tmp_apply | bool
+        and
         (ansible_facts['mounts'] | selectattr('mount', 'equalto', '/tmp') | map(attribute='device') | first | default(''))
         !=
         ("/dev/mapper/" ~ (cis_ubuntu2404_dedicated_disk_vgname | replace('-', '--'))
@@ -35,17 +37,24 @@
         (cis_ubuntu2404_dedicated_disk_tmp_lvol | replace('-', '--')))
       ansible.builtin.include_tasks:
         file: 1_1_2_1_configure_tmp_dedicated_disk.yml
+      register: dedicated_tmp_result
 
 - name: 1.1.2 | Configure filesystem partitions | Existing partition include tasks
-  when: cis_ubuntu2404_dedicated_disk_apply
   block:
-    - name: 1.1.2.1 | Configure /tmp | Include dedicated disk tasks
-      when: >
-        (ansible_facts['mounts'] | selectattr('mount', 'equalto', '/tmp') | map(attribute='device') | first | default(''))
-        !=
-        ("/dev/mapper/" ~ (cis_ubuntu2404_dedicated_disk_vgname | replace('-', '--'))
-        ~ "-" ~
-        (cis_ubuntu2404_dedicated_disk_tmp_lvol | replace('-', '--')))
+    - name: 1.1.2.1 | Configure /tmp | Detect /tmp mount state
+      ansible.builtin.command:
+        cmd: mountpoint -q /tmp
+      register: tmp_mount_check
+      failed_when: false
+      changed_when: false
+
+    - name: 1.1.2.1 | Configure /tmp | Include existing partition tasks
+      when:
+        - >
+          not cis_ubuntu2404_dedicated_disk_apply | bool
+          or not cis_ubuntu2404_dedicated_disk_tmp_apply | bool
+          or (dedicated_tmp_result is skipped)
+        - tmp_mount_check.rc == 0
       ansible.builtin.include_tasks:
         file: 1_1_2_1_configure_tmp_existing_partition.yml
 

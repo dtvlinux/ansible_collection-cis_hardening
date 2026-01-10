@@ -261,12 +261,12 @@ class DedicatedDiskPartition:
             'vg_exists': self.check_vg_exists(),
             'lv_exists': self.check_lv_exists(),
             'fs_type': self.get_fs_type(),
-            'fstab_has_correct': False,
+            'fstab_correct': False,
             'fstab_previous_entries': 0,
         }
         if results['lv_exists']:
             has_correct, previous_lines, _ = self.check_fstab_entry()
-            results['fstab_has_correct'] = has_correct
+            results['fstab_correct'] = has_correct
             results['fstab_previous_entries'] = len(previous_lines)
         return results
 
@@ -336,7 +336,7 @@ def main():
 
     fstab_changed = False
     if state['lv_exists'] or lv_created:
-        has_correct = state['fstab_has_correct']
+        has_correct = state['fstab_correct']
         previous_entries = state['fstab_previous_entries']
         if previous_entries > 0 or not has_correct:
             if not module.check_mode:

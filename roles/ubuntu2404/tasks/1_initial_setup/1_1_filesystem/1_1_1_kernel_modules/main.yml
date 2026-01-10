@@ -1,6 +1,6 @@
 ---
 - name: 1.1.1.1 | Ensure cramfs kernel module is not available
-  when: cis_ubuntu2404_cramfs_apply
+  when: cis_ubuntu2404_cramfs_apply | bool
   dtvlinux.cis_hardening.disable_modules:
     modules: cramfs
     config_file: "{{ cis_ubuntu2404_cramfs_conf }}"
@@ -12,7 +12,7 @@
     - cis_ubuntu2404_ig_3
 
 - name: 1.1.1.2 | Ensure freevxfs kernel module is not available
-  when: cis_ubuntu2404_freevxfs_apply
+  when: cis_ubuntu2404_freevxfs_apply | bool
   dtvlinux.cis_hardening.disable_modules:
     modules: freevxfs
     config_file: "{{ cis_ubuntu2404_freevxfs_conf }}"
@@ -24,7 +24,7 @@
     - cis_ubuntu2404_ig_3
 
 - name: 1.1.1.3 | Ensure hfs kernel module is not available
-  when: cis_ubuntu2404_hfs_apply
+  when: cis_ubuntu2404_hfs_apply | bool
   dtvlinux.cis_hardening.disable_modules:
     modules: hfs
     config_file: "{{ cis_ubuntu2404_hfs_conf }}"
@@ -36,7 +36,7 @@
     - cis_ubuntu2404_ig_3
 
 - name: 1.1.1.4 | Ensure hfsplus kernel module is not available
-  when: cis_ubuntu2404_hfsplus_apply
+  when: cis_ubuntu2404_hfsplus_apply | bool
   dtvlinux.cis_hardening.disable_modules:
     modules: hfsplus
     config_file: "{{ cis_ubuntu2404_hfsplus_conf }}"
@@ -48,7 +48,7 @@
     - cis_ubuntu2404_ig_3
 
 - name: 1.1.1.5 | Ensure jffs2 kernel module is not available
-  when: cis_ubuntu2404_jffs2_apply
+  when: cis_ubuntu2404_jffs2_apply | bool
   dtvlinux.cis_hardening.disable_modules:
     modules: jffs2
     config_file: "{{ cis_ubuntu2404_jffs2_conf }}"
@@ -60,7 +60,7 @@
     - cis_ubuntu2404_ig_3
 
 - name: 1.1.1.6 | Ensure overlayfs kernel module is not available
-  when: cis_ubuntu2404_overlayfs_apply
+  when: cis_ubuntu2404_overlayfs_apply | bool
   dtvlinux.cis_hardening.disable_modules:
     modules: overlayfs
     config_file: "{{ cis_ubuntu2404_overlayfs_conf }}"
@@ -72,7 +72,7 @@
     - cis_ubuntu2404_ig_3
 
 - name: 1.1.1.7 | Ensure squashfs kernel module is not available
-  when: cis_ubuntu2404_squashfs_apply
+  when: cis_ubuntu2404_squashfs_apply | bool
   dtvlinux.cis_hardening.disable_modules:
     modules: squashfs
     config_file: "{{ cis_ubuntu2404_squashfs_conf }}"
@@ -84,7 +84,7 @@
     - cis_ubuntu2404_ig_3
 
 - name: 1.1.1.8 | Ensure udf kernel module is not available
-  when: cis_ubuntu2404_udf_apply
+  when: cis_ubuntu2404_udf_apply | bool
   dtvlinux.cis_hardening.disable_modules:
     modules: udf
     config_file: "{{ cis_ubuntu2404_udf_conf }}"
@@ -96,7 +96,7 @@
     - cis_ubuntu2404_ig_3
 
 - name: 1.1.1.9 | Ensure usb-storage kernel module is not available
-  when: cis_ubuntu2404_usb_storage_apply
+  when: cis_ubuntu2404_usb_storage_apply | bool
   dtvlinux.cis_hardening.disable_modules:
     modules: usb-storage
     config_file: "{{ cis_ubuntu2404_usb_storage_conf }}"
@@ -109,7 +109,7 @@
     - cis_ubuntu2404_ig_3
 
 - name: 1.1.1.10 | Ensure unused_filesystems kernel modules are not available
-  when: cis_ubuntu2404_unused_filesystems_apply
+  when: cis_ubuntu2404_unused_filesystems_apply | bool
   dtvlinux.cis_hardening.disable_modules:
     modules: "{{ cis_ubuntu2404_unused_filesystems_module_list }}"
     config_file: "{{ cis_ubuntu2404_unused_filesystems_conf }}"

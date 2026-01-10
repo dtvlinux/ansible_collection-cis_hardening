@@ -1,0 +1,41 @@
+---
+- name: 1.1.2.3.1 | Ensure /home is a separate partition
+  dtvlinux.cis_hardening.dedicated_disk_partition:
+    path: /home
+    device: "{{ cis_ubuntu2404_dedicated_disk_device }}"
+    vg: "{{ cis_ubuntu2404_dedicated_disk_vgname }}"
+    lv: "{{ cis_ubuntu2404_dedicated_disk_home_lvol }}"
+    size: "{{ cis_ubuntu2404_dedicated_disk_home_size }}"
+    fstype: "{{ cis_ubuntu2404_dedicated_disk_home_type }}"
+    sync: true
+  register: home_partition_result
+  notify: Reboot system
+
+- name: 1.1.2.3.x | Configure /home | Task block
+  when: home_partition_result is success
+  block:
+    - name: 1.1.2.3.2 | Ensure nodev option set on /home partition
+      when: cis_ubuntu2404_home_nodev_apply | bool
+      vars:
+        current_opts: "{{ (ansible_facts['mounts'] | selectattr('mount', 'equalto', '/home') | first).options | default('defaults') }}"
+      ansible.posix.mount:
+        path: /home
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_home_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_home_type }}"
+        opts: "{{ (current_opts.split(',') + ['nodev']) | unique | join(',') }}"
+        state: present
+        backup: yes
+      register: home_fstab_nodev
+
+    - name: 1.1.2.3.3 | Ensure nosuid option set on /home partition
+      when: cis_ubuntu2404_home_nosuid_apply | bool
+      vars:
+        current_opts: >-
+          {{ home_fstab_nodev.opts if home_fstab_nodev is changed 
+             else (ansible_facts['mounts'] | selectattr('mount', 'equalto', '/home') | first).options | default('defaults') }}
+      ansible.posix.mount:
+        path: /home
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_home_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_home_type }}"
+        opts: "{{ (current_opts.split(',') + ['nosuid']) | unique | join(',') }}"
+        state: present

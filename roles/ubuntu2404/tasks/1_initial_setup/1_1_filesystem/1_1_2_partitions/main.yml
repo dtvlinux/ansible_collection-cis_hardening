@@ -39,6 +39,32 @@
         file: 1_1_2_1_configure_tmp_dedicated_disk.yml
       register: dedicated_tmp_result
 
+    - name: 1.1.2.3 | Configure /home | Include dedicated disk tasks
+      when: >
+        cis_ubuntu2404_dedicated_disk_home_apply | bool
+        and
+        (ansible_facts['mounts'] | selectattr('mount', 'equalto', '/home') | map(attribute='device') | first | default(''))
+        !=
+        ("/dev/mapper/" ~ (cis_ubuntu2404_dedicated_disk_vgname | replace('-', '--'))
+        ~ "-" ~
+        (cis_ubuntu2404_dedicated_disk_home_lvol | replace('-', '--')))
+      ansible.builtin.include_tasks:
+        file: 1_1_2_3_configure_home_dedicated_disk.yml
+      register: dedicated_home_result
+    
+    - name: 1.1.2.4 | Configure /var | Include dedicated disk tasks
+      when: >
+        cis_ubuntu2404_dedicated_disk_var_apply | bool
+        and
+        (ansible_facts['mounts'] | selectattr('mount', 'equalto', '/var') | map(attribute='device') | first | default(''))
+        !=
+        ("/dev/mapper/" ~ (cis_ubuntu2404_dedicated_disk_vgname | replace('-', '--'))
+        ~ "-" ~
+        (cis_ubuntu2404_dedicated_disk_var_lvol | replace('-', '--')))
+      ansible.builtin.include_tasks:
+        file: 1_1_2_4_configure_var_dedicated_disk.yml
+      register: dedicated_var_result
+
 - name: 1.1.2 | Configure filesystem partitions | Existing partition include tasks
   block:
     - name: 1.1.2.1 | Configure /tmp | Detect /tmp mount state
@@ -58,18 +84,46 @@
       ansible.builtin.include_tasks:
         file: 1_1_2_1_configure_tmp_existing_partition.yml
 
+    - name: 1.1.2.2 | Configure /dev/shm | Include partition tasks
+      when: cis_ubuntu2404_dev_shm_apply | bool
+      ansible.builtin.include_tasks:
+        file: 1_1_2_2_configure_dev_shm_partition.yml
 
-    # - name: 1.1.2.3.1 | Ensure /home is a separate partition
-    #   when: cis_ubuntu2404_dedicated_disk_home_apply
-    #   dtvlinux.cis_hardening.dedicated_disk_partition:
-    #     path: /home
-    #     device: "{{ cis_ubuntu2404_dedicated_disk_device }}"
-    #     vg: "{{ cis_ubuntu2404_dedicated_disk_vgname }}"
-    #     lv: "{{ cis_ubuntu2404_dedicated_disk_home_lvol }}"
-    #     size: "{{ cis_ubuntu2404_dedicated_disk_home_size }}"
-    #     fstype: "{{ cis_ubuntu2404_dedicated_disk_home_type }}"
-    #     sync: true
+    - name: 1.1.2.3 | Configure /home | Detect /home mount state
+      ansible.builtin.command:
+        cmd: mountpoint -q /home
+      register: home_mount_check
+      failed_when: false
+      changed_when: false
+
+    - name: 1.1.2.3 | Configure /home | Include existing partition tasks
+      when:
+        - >
+          not cis_ubuntu2404_dedicated_disk_apply | bool
+          or not cis_ubuntu2404_dedicated_disk_tmp_apply | bool
+          or (dedicated_home_result is skipped)
+        - home_mount_check.rc == 0
+      ansible.builtin.include_tasks:
+        file: 1_1_2_3_configure_home_existing_partition.yml
     
+    - name: 1.1.2.4 | Configure /var | Detect /var mount state
+      ansible.builtin.command:
+        cmd: mountpoint -q /var
+      register: var_mount_check
+      failed_when: false
+      changed_when: false
+
+    - name: 1.1.2.4 | Configure /var | Include existing partition tasks
+      when:
+        - >
+          not cis_ubuntu2404_dedicated_disk_apply | bool
+          or not cis_ubuntu2404_dedicated_disk_tmp_apply | bool
+          or (dedicated_var_result is skipped)
+        - var_mount_check.rc == 0
+      ansible.builtin.include_tasks:
+        file: 1_1_2_4_configure_var_existing_partition.yml
+
+
     # - name: 1.1.2.4.1 | Ensure /var is a separate partition
     #   when: cis_ubuntu2404_dedicated_disk_var_apply
     #   dtvlinux.cis_hardening.dedicated_disk_partition:
@@ -115,120 +169,3 @@
     #     sync: true
 
 
-
-
-
-
-# - name: 1.1.2 | Configure filesystem partitions | Import dedicated disk tasks
-#   when: cis_ubuntu2404_dedicated_disk_apply
-#   block:
-#     - name: 1.1.2.1 | Configure /tmp | Import dedicated disk tasks
-#       when: cis_ubuntu2404_dedicated_disk_tmp_apply
-#       ansible.builtin.import_tasks:
-#         file: dedicated_disk_tmp.yml
-    
-#     - name: 1.1.2.3 | Configure /home | Import dedicated disk tasks
-#       when: cis_ubuntu2404_dedicated_disk_home_apply
-#       ansible.builtin.import_tasks:
-#         file: dedicated_disk_home.yml
-
-
-
-# Update mount facts
-
-# - name: 1.1.2 | Configure filesystem partitions | Import existing partition tasks
-#   block:
-#     - name: 1.1.2.1 | Configure /tmp | Import existing partition tasks
-#       when:
-#         - not tmp_fstab_entry.changed
-#         - (
-#             cis_ubuntu2404_tmp_nodev_apply  or
-#             cis_ubuntu2404_tmp_nosuid_apply or
-#             cis_ubuntu2404_tmp_noexec_apply
-#           )
-#       ansible.builtin.import_tasks:
-#         file: existing_tmp.yml
-
-# - name: 1.1.2 | Configure filesystem partitions | Include tasks
-#   vars:
-#     vgname: "{{ cis_ubuntu2404_dedicated_disk_vgname }}"
-#   ansible.builtin.include_tasks:
-#     file: 1_1_2_include_tasks.yml
-#   loop:
-    
-#     - path: /home
-#       apply: "{{ cis_ubuntu2404_filesystem_home_apply }}"
-#       sync: true
-#       task_prefix1: 1.1.2.3.1 | Ensure /home is a separate partition
-#       task_prefix2: 1.1.2.3.[2,3] | Ensure [nodev,nosid] option set on /home partition
-#       lvol: "{{ cis_ubuntu2404_filesystem_home_lvol }}"
-#       size: "{{ cis_ubuntu2404_filesystem_home_size }}"
-#       type: "{{ cis_ubuntu2404_filesystem_home_type }}"
-#       opts: "{{ cis_ubuntu2404_filesystem_home_options }}"
-#       dump: "{{ cis_ubuntu2404_filesystem_home_dump }}"
-#       pass: "{{ cis_ubuntu2404_filesystem_home_passno }}"
-
-#     - path: /var
-#       apply: "{{ cis_ubuntu2404_filesystem_var_apply }}"
-#       sync: true
-#       task_prefix1: 1.1.2.4.1 | Ensure /var is a separate partition
-#       task_prefix2: 1.1.2.4.[2,3] | Ensure [nodev,nosid] option set on /var partition
-#       lvol: "{{ cis_ubuntu2404_filesystem_var_lvol }}"
-#       size: "{{ cis_ubuntu2404_filesystem_var_size }}"
-#       type: "{{ cis_ubuntu2404_filesystem_var_type }}"
-#       opts: "{{ cis_ubuntu2404_filesystem_var_options }}"
-#       dump: "{{ cis_ubuntu2404_filesystem_var_dump }}"
-#       pass: "{{ cis_ubuntu2404_filesystem_var_passno }}"
-
-#     - path: /var/tmp
-#       apply: "{{ cis_ubuntu2404_filesystem_var_tmp_apply }}"
-#       sync: true
-#       task_prefix1: 1.1.2.5.1 | Ensure /var/tmp is a separate partition
-#       task_prefix2: 1.1.2.5.[2,3,4] | Ensure [nodev,nosid,noexec] option set on /var/tmp partition
-#       lvol: "{{ cis_ubuntu2404_filesystem_var_tmp_lvol }}"
-#       size: "{{ cis_ubuntu2404_filesystem_var_tmp_size }}"
-#       type: "{{ cis_ubuntu2404_filesystem_var_tmp_type }}"
-#       opts: "{{ cis_ubuntu2404_filesystem_var_tmp_options }}"
-#       dump: "{{ cis_ubuntu2404_filesystem_var_tmp_dump }}"
-#       pass: "{{ cis_ubuntu2404_filesystem_var_tmp_passno }}"
-
-#     - path: /var/log
-#       apply: "{{ cis_ubuntu2404_filesystem_var_log_apply }}"
-#       sync: true
-#       task_prefix1: 1.1.2.6.1 | Ensure /var/log is a separate partition
-#       task_prefix2: 1.1.2.6.[2,3,4] | Ensure [nodev,nosid,noexec] option set on /var/log partition
-#       lvol: "{{ cis_ubuntu2404_filesystem_var_log_lvol }}"
-#       size: "{{ cis_ubuntu2404_filesystem_var_log_size }}"
-#       type: "{{ cis_ubuntu2404_filesystem_var_log_type }}"
-#       opts: "{{ cis_ubuntu2404_filesystem_var_log_options }}"
-#       dump: "{{ cis_ubuntu2404_filesystem_var_log_dump }}"
-#       pass: "{{ cis_ubuntu2404_filesystem_var_log_passno }}"
-
-#     - path: /var/log/audit
-#       apply: "{{ cis_ubuntu2404_filesystem_var_log_audit_apply }}"
-#       sync: true
-#       task_prefix1: 1.1.2.7.1 | Ensure /var/log/audit is a separate partition
-#       task_prefix2: 1.1.2.7.[2,3,4] | Ensure [nodev,nosid,noexec] option set on /var/log/audit partition
-#       lvol: "{{ cis_ubuntu2404_filesystem_var_log_audit_lvol }}"
-#       size: "{{ cis_ubuntu2404_filesystem_var_log_audit_size }}"
-#       type: "{{ cis_ubuntu2404_filesystem_var_log_audit_type }}"
-#       opts: "{{ cis_ubuntu2404_filesystem_var_log_audit_options }}"
-#       dump: "{{ cis_ubuntu2404_filesystem_var_log_audit_dump }}"
-#       pass: "{{ cis_ubuntu2404_filesystem_var_log_audit_passno }}"
-#   loop_control:
-#     loop_var: partition
-#     label: "Configure {{ partition.path }}"
-#   when:
-#     - volume_group is success
-#     - partition.apply
-
-- name: 1.1.2.2 | Configure /dev/shm
-  when: cis_ubuntu2404_tmpfs_dev_shm_apply
-  ansible.posix.mount:
-    path: /dev/shm
-    src: tmpfs
-    fstype: tmpfs
-    opts: "{{ cis_ubuntu2404_tmpfs_dev_shm_options }}"
-    dump: 0
-    passno: 0
-    state: mounted

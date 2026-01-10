@@ -110,17 +110,16 @@ cis_ubuntu2404_tmp_noexec_apply: true
 #### 1.1.2.2 - Configure /dev/shm
 
 ##### 1.1.2.2.1 - Ensure /dev/shm is a separate partition
-cis_ubuntu2404_tmpfs_dev_shm_apply: true
-cis_ubuntu2404_tmpfs_dev_shm_options: rw,nosuid,nodev,noexec,relatime
+cis_ubuntu2404_dev_shm_apply: true
 
 ##### 1.1.2.1.2 - Ensure nodev option set on /dev/shm partition
-cis_ubuntu2404_tmpfs_dev_shm_nodev_apply: true
+cis_ubuntu2404_dev_shm_nodev_apply: true
 
 ##### 1.1.2.1.3 - Ensure nosuid option set on /dev/shm partition
-cis_ubuntu2404_tmpfs_dev_shm_nosuid_apply: true
+cis_ubuntu2404_dev_shm_nosuid_apply: true
 
 ##### 1.1.2.1.4 - Ensure noexec option set on /dev/shm partition
-cis_ubuntu2404_tmpfs_dev_shm_noexec_apply: true
+cis_ubuntu2404_dev_shm_noexec_apply: true
 
 #### 1.1.2.3 - Configure /home
 
@@ -129,9 +128,6 @@ cis_ubuntu2404_dedicated_disk_home_apply: "{{ true if cis_ubuntu2404_profile in 
 cis_ubuntu2404_dedicated_disk_home_lvol: lv_home
 cis_ubuntu2404_dedicated_disk_home_type: ext4
 cis_ubuntu2404_dedicated_disk_home_size: 2G
-cis_ubuntu2404_dedicated_disk_home_options: defaults,rw,nosuid,nodev,relatime
-cis_ubuntu2404_dedicated_disk_home_dump: 0
-cis_ubuntu2404_dedicated_disk_home_passno: 0
 
 ##### 1.1.2.3.2 - Ensure nodev option set on /home partition
 cis_ubuntu2404_home_nodev_apply: true
@@ -146,9 +142,6 @@ cis_ubuntu2404_dedicated_disk_var_apply: "{{ true if cis_ubuntu2404_profile in [
 cis_ubuntu2404_dedicated_disk_var_lvol: lv_var
 cis_ubuntu2404_dedicated_disk_var_type: ext4
 cis_ubuntu2404_dedicated_disk_var_size: 8G
-cis_ubuntu2404_dedicated_disk_var_options: defaults,rw,nosuid,nodev,relatime
-cis_ubuntu2404_dedicated_disk_var_dump: 0
-cis_ubuntu2404_dedicated_disk_var_passno: 0
 
 ##### 1.1.2.4.2 - Ensure nodev option set on /var partition
 cis_ubuntu2404_var_nodev_apply: true

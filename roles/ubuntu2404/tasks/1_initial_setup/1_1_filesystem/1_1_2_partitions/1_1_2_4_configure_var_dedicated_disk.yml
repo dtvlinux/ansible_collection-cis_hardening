@@ -1,0 +1,41 @@
+---
+- name: 1.1.2.4.1 | Ensure /var is a separate partition
+  dtvlinux.cis_hardening.dedicated_disk_partition:
+    path: /var
+    device: "{{ cis_ubuntu2404_dedicated_disk_device }}"
+    vg: "{{ cis_ubuntu2404_dedicated_disk_vgname }}"
+    lv: "{{ cis_ubuntu2404_dedicated_disk_var_lvol }}"
+    size: "{{ cis_ubuntu2404_dedicated_disk_var_size }}"
+    fstype: "{{ cis_ubuntu2404_dedicated_disk_var_type }}"
+    sync: true
+  register: var_partition_result
+  notify: Reboot system
+
+- name: 1.1.2.4.x | Configure /var | Task block
+  when: var_partition_result is success
+  block:
+    - name: 1.1.2.4.2 | Ensure nodev option set on /var partition
+      when: cis_ubuntu2404_var_nodev_apply | bool
+      vars:
+        current_opts: "{{ (ansible_facts['mounts'] | selectattr('mount', 'equalto', '/var') | first).options | default('defaults') }}"
+      ansible.posix.mount:
+        path: /var
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_var_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_var_type }}"
+        opts: "{{ (current_opts.split(',') + ['nodev']) | unique | join(',') }}"
+        state: present
+        backup: yes
+      register: var_fstab_nodev
+
+    - name: 1.1.2.4.3 | Ensure nosuid option set on /var partition
+      when: cis_ubuntu2404_var_nosuid_apply | bool
+      vars:
+        current_opts: >-
+          {{ var_fstab_nodev.opts if var_fstab_nodev is changed 
+             else (ansible_facts['mounts'] | selectattr('mount', 'equalto', '/var') | first).options | default('defaults') }}
+      ansible.posix.mount:
+        path: /var
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_var_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_var_type }}"
+        opts: "{{ (current_opts.split(',') + ['nosuid']) | unique | join(',') }}"
+        state: present

@@ -12,3 +12,13 @@
   ansible.builtin.command:
     cmd: mount -o remount /tmp
   changed_when: true
+
+- name: Remount /dev/shm
+  ansible.builtin.command:
+    cmd: mount -o remount /dev/shm
+  changed_when: true
+
+- name: Remount /home
+  ansible.builtin.command:
+    cmd: mount -o remount /home
+  changed_when: true

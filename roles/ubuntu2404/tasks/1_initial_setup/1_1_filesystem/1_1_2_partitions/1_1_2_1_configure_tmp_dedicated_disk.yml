@@ -14,17 +14,6 @@
 - name: 1.1.2.1.x | Configure /tmp | Task block
   when: tmp_partition_result is success
   block:
-    # If /tmp is mounted by tmp.mount, fstab entry may not take precedence, therefore disable it
-    - name: 1.1.2.1.1 | Ensure /tmp is a separate partition | Disable systemd tmp.mount
-      when: tmp_partition_result is success
-      ansible.builtin.systemd_service:
-        name: tmp.mount
-        enabled: false
-      register: tmp_disable_result
-      failed_when: 
-        - tmp_disable_result is failed
-        - "'Could not find' not in tmp_disable_result.msg"
-
     - name: 1.1.2.1.2 | Ensure nodev option set on /tmp partition
       when: cis_ubuntu2404_tmp_nodev_apply | bool
       vars:

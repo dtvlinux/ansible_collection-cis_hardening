@@ -255,6 +255,41 @@ class DedicatedDiskPartition:
                 os.rmdir(self.temp_mnt)
 
         return True, "synced data"
+    
+    def disable_mount_unit(self):
+        unit_name = self.path.strip('/').replace('/', '-') + ".mount"
+
+        changed = False
+        rc, _, _ = self.module.run_command(['systemctl', 'disable', unit_name])
+        if rc == 0:
+            changed = True
+
+        rc_mask, _, _ = self.module.run_command(['systemctl', 'mask', unit_name])
+        if rc_mask == 0:
+            changed = True
+            
+        if changed:
+            self.module.run_command(['systemctl', 'daemon-reload'])
+            
+        return changed
+    
+    def mask_mount_unit(self):
+        unit = self.path.lstrip('/').replace('/', '-') + '.mount'
+        if not unit:
+            return False, None
+
+        rc, out, err = self.module.run_command(['systemctl', 'is-enabled', unit])
+        if rc != 0 or out.strip() == 'masked':
+            return False, None
+
+        if self.module.check_mode:
+            return True, unit
+
+        rc, _, err = self.module.run_command(['systemctl', 'mask', unit])
+        if rc != 0:
+            self.module.fail_json(msg=f"Failed to mask {unit}: {err}")
+
+        return True, unit
 
     def validate_current_state(self):
         results = {
@@ -365,6 +400,14 @@ def main():
         else:
             would_change_msgs.append("would sync data")
         changed |= sync_changed
+
+    mask_changed, masked_unit = manager.mask_mount_unit()
+    changed |= mask_changed
+    if mask_changed and masked_unit:
+        if module.check_mode:
+            would_change_msgs.append(f"would mask conflicting mount unit {masked_unit}")
+        else:
+            change_msgs.append(f"masked conflicting mount unit {masked_unit}")
 
     if module.check_mode:
         module.exit_json(

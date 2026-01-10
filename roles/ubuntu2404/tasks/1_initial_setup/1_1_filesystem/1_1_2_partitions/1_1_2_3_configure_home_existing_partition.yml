@@ -1,0 +1,32 @@
+---
+- name: 1.1.2.3.1 | Ensure /home is a separate partition | Check /home exists in fstab
+  ansible.builtin.command:
+    cmd: grep -E '^\S+\s+/home\s+' /etc/fstab
+  register: home_fstab_check
+  failed_when: false
+  changed_when: false
+
+- name: 1.1.2.3.1 | Ensure /home is a separate partition | Confirm /home is seperate mount
+  ansible.builtin.debug:
+    msg: "/home is a seperate mount"
+
+- name: 1.1.2.3.2 | Ensure nodev option set on /home partition
+  when:
+    - cis_ubuntu2404_home_nodev_apply | bool
+    - home_fstab_check.rc == 0
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^(\S+\s+/home\s+\S+\s+)(?!.*\bnodev\b)(\S+)(\s+.*)$'
+    replace: '\1\2,nodev\3'
+  notify: Remount /home
+  
+- name: 1.1.2.3.3 | Ensure nosuid option set on /home partition
+  when:
+    - cis_ubuntu2404_home_nosuid_apply | bool
+    - home_fstab_check.rc == 0
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^(\S+\s+/home\s+\S+\s+)(?!.*\bnosuid\b)(\S+)(\s+.*)$'
+    replace: '\1\2,nosuid\3'
+  notify: Remount /home
+  

@@ -77,6 +77,10 @@ applied_excludes:
   type: list
   returned: success
   elements: str
+reboot_required:
+  description: Whether the changes require a system reboot to take effect.
+  type: bool
+  returned: always
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -84,6 +88,17 @@ import os
 import stat
 import json
 import re
+
+def size_to_bytes(size_str):
+    size_str = size_str.upper()
+    match = re.match(r'^(\d+(?:\.\d+)?)([BKMGT])?$', size_str)
+    if not match:
+        raise ValueError("Invalid size format")
+    num, unit = match.groups()
+    num = float(num)
+    units = {'B': 1, 'K': 1024, 'M': 1024**2, 'G': 1024**3, 'T': 1024**4}
+    multiplier = units.get(unit, 1)
+    return int(num * multiplier)
 
 class DedicatedDiskPartition:
     FILE_FSTAB = '/etc/fstab'
@@ -171,8 +186,18 @@ class DedicatedDiskPartition:
         rc, _, _ = self.module.run_command(['lvs', f"{self.vg}/{self.lv}"])
         return rc == 0
 
+    def get_lv_size(self):
+        rc, out, err = self.module.run_command(['lvs', '--noheadings', '-o', 'lv_size', '--units', 'b', '--nosuffix', f"{self.vg}/{self.lv}"])
+        if rc == 0:
+            return out.strip()
+        else:
+            self.module.fail_json(msg=f"Failed to get LV size: {err}")
+
     def create_lv(self):
         self.module.run_command(['lvcreate', '--yes', '-L', self.size, '-n', self.lv, self.vg], check_rc=True)
+
+    def resize_lv(self):
+        self.module.run_command(['lvextend', '-L', self.size, '-r', self.lv_device], check_rc=True)
 
     def get_fs_type(self):
         rc, out, _ = self.module.run_command(['blkid', '-s', 'TYPE', '-o', 'value', self.lv_device])
@@ -293,79 +318,109 @@ def main():
     change_msgs = []
     would_change_msgs = []
 
-    # Always ensure VG includes the device
+    # Ensure VG
     vg_changed = False
-    if not module.check_mode:
-        vg_changed = manager.ensure_vg()
+    if module.check_mode:
+        if not state['vg_exists']:
+            vg_changed = True
+            would_change_msgs.append("would ensure VG and PV")
     else:
-        would_change_msgs.append("would ensure VG and PV")
+        vg_changed = manager.ensure_vg()
+        if vg_changed:
+            change_msgs.append("created VG")
     changed |= vg_changed
-    if vg_changed:
-        change_msgs.append("created VG")
 
+    # Ensure LV
     lv_created = False
     if not state['lv_exists']:
-        if not module.check_mode:
-            manager.create_lv()
-        else:
+        if module.check_mode:
             would_change_msgs.append("would create LV")
-        changed = True
-        change_msgs.append("created LV")
+        else:
+            manager.create_lv()
+            change_msgs.append("created LV")
         lv_created = True
+        changed = True
 
+    # Resize LV if needed
+    resize_performed = False
+    if state['lv_exists']:
+        try:
+            requested_bytes = size_to_bytes(manager.size)
+            current_bytes = int(manager.get_lv_size())
+            if requested_bytes > current_bytes:
+                if module.check_mode:
+                    would_change_msgs.append("would resize LV and filesystem")
+                else:
+                    manager.resize_lv()
+                    change_msgs.append("resized LV and filesystem")
+                resize_performed = True
+                changed = True
+        except ValueError as e:
+            module.fail_json(msg=f"Size comparison failed: {str(e)}")
+
+    # Create filesystem if needed
     fs_created = False
     current_fstype = state['fs_type']
     if lv_created or not current_fstype:
-        use_fstype = manager.fstype
-        if not module.check_mode:
-            manager.create_fs()
-        else:
+        if module.check_mode:
             would_change_msgs.append("would create filesystem")
-        changed = True
-        change_msgs.append("created filesystem")
+        else:
+            manager.create_fs()
+            change_msgs.append("created filesystem")
         fs_created = True
-        current_fstype = use_fstype
-    elif current_fstype and state['lv_exists']:
-        # Ignore provided fstype, use current
-        pass
+        current_fstype = manager.fstype
+        changed = True
 
+    # Update fstab if needed
     fstab_changed = False
     if state['lv_exists'] or lv_created:
-        has_correct = state['fstab_correct']
-        previous_entries = state['fstab_previous_entries']
+        has_correct, previous_lines, _ = manager.check_fstab_entry()
+        previous_entries = len(previous_lines)
         if previous_entries > 0 or not has_correct:
-            if not module.check_mode:
-                fstab_changed = manager.update_fstab(current_fstype)
-            else:
+            if module.check_mode:
                 would_change_msgs.append("would update fstab")
-            changed |= fstab_changed
-            if fstab_changed:
+            else:
+                manager.update_fstab(current_fstype)
                 if previous_entries > 0:
                     change_msgs.append(f"commented out {previous_entries} previous fstab entries")
                 if not has_correct:
                     change_msgs.append("added new fstab entry")
+            fstab_changed = True
+            changed = True
 
+    # Sync data if needed
     sync_changed = False
-    sync_msg = ''
     default_excludes_map = {
         '/var': ['log/*', 'tmp/*'],
         '/var/log': ['audit/*']
     }
     default_excludes = default_excludes_map.get(manager.path, [])
     if manager.sync and fs_created:
-        if not module.check_mode:
+        if module.check_mode:
+            if not os.path.isdir(manager.path) or os.listdir(manager.path):
+                would_change_msgs.append("would sync data")
+                sync_changed = True
+        else:
             sync_changed, sync_msg = manager.sync_data(default_excludes)
             if sync_changed:
                 change_msgs.append(sync_msg)
-        else:
-            would_change_msgs.append("would sync data")
         changed |= sync_changed
 
+    # Determine if reboot is required
+    reboot_required = vg_changed or lv_created or fs_created or fstab_changed or sync_changed
+
     if module.check_mode:
+        # In check mode, changed is True if any would_change
+        changed = len(would_change_msgs) > 0
+        # Reboot required unless only resize
+        if changed:
+            reboot_required = not (len(would_change_msgs) == 1 and "would resize LV and filesystem" in would_change_msgs)
+        msg = "; ".join(change_msgs + would_change_msgs) if changed else "No changes needed"
         module.exit_json(
             changed=changed,
-            msg="; ".join(change_msgs + would_change_msgs) if changed else "No changes needed",
-            validation_results=state
+            msg=msg,
+            validation_results=state,
+            reboot_required=reboot_required
         )
 
     # Refresh state after changes
@@ -374,7 +429,8 @@ def main():
     module.exit_json(
         changed=changed,
         msg="; ".join(change_msgs) if changed else "Configuration matches specification",
-        validation_results=new_state
+        validation_results=new_state,
+        reboot_required=reboot_required
     )
 
 if __name__ == "__main__":

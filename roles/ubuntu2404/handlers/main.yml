@@ -1,15 +1,35 @@
 ---
-- name: Reboot system
-  when: cis_ubuntu2404_reboot
+- name: Rebooting system for partition changes
+  listen: dtvlinux.cis_hardening.reboot
+  when:
+    - cis_ubuntu2404_reboot
+    - 
+      (
+        tmp_partition_result.reboot_required | default(false) | bool or
+        home_partition_result.reboot_required | default(false) | bool or
+        var_partition_result.reboot_required | default(false) | bool or
+        var_tmp_partition_result.reboot_required | default(false) | bool or
+        var_log_partition_result.reboot_required | default(false) | bool or
+        var_log_audit_partition_result.reboot_required | default(false) | bool
+      )
   ansible.builtin.reboot:
-    msg: Rebooting to apply CIS hardening changes
+    msg: Rebooting to apply partition changes
     connect_timeout: 5
-    reboot_timeout: 600
+    reboot_timeout: 300
     pre_reboot_delay: 0
     post_reboot_delay: 30
     test_command: uptime
 
 - name: Remount /tmp
+  when: >
+    not (
+      (tmp_partition_result.reboot_required | default(false)) or
+      (home_partition_result.reboot_required | default(false)) or
+      (var_partition_result.reboot_required | default(false)) or
+      (var_tmp_partition_result.reboot_required | default(false)) or
+      (var_log_partition_result.reboot_required | default(false)) or
+      (var_log_audit_partition_result.reboot_required | default(false))
+    )
   ansible.builtin.shell:
     cmd: >
       grep -q "{{ cis_ubuntu2404_dedicated_disk_tmp_lvol | replace('-', '--') }}" /proc/mounts &&

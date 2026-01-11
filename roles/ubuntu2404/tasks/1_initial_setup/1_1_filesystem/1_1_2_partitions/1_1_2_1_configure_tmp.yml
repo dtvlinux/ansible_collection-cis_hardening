@@ -9,7 +9,7 @@
     fstype: "{{ cis_ubuntu2404_dedicated_disk_tmp_type }}"
     sync: false
   register: tmp_partition_result
-  notify: Reboot system
+  notify: dtvlinux.cis_hardening.reboot
 
 - name: 1.1.2.1.x | Configure /tmp | Task block
   when: tmp_partition_result is success
@@ -22,7 +22,7 @@
         path: /tmp
         src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_tmp_lvol }}"
         fstype: "{{ cis_ubuntu2404_dedicated_disk_tmp_type }}"
-        opts: "{{ (current_opts.split(',') + ['nodev']) | unique | join(',') }}"
+        opts: "{{ (current_opts.split(',') + ['nodev']) | unique | sort | join(',') }}"
         state: present
         backup: yes
       register: tmp_fstab_nodev
@@ -36,7 +36,7 @@
         path: /tmp
         src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_tmp_lvol }}"
         fstype: "{{ cis_ubuntu2404_dedicated_disk_tmp_type }}"
-        opts: "{{ (current_opts.split(',') + ['nosuid']) | unique | join(',') }}"
+        opts: "{{ (current_opts.split(',') + ['nosuid']) | unique | sort | join(',') }}"
         state: present
       register: tmp_fstab_nosuid
       notify: Remount /tmp
@@ -49,6 +49,6 @@
         path: /tmp
         src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_tmp_lvol }}"
         fstype: "{{ cis_ubuntu2404_dedicated_disk_tmp_type }}"
-        opts: "{{ (current_opts.split(',') + ['noexec']) | unique | join(',') }}"
+        opts: "{{ (current_opts.split(',') + ['noexec']) | unique | sort | join(',') }}"
         state: present
       notify: Remount /tmp

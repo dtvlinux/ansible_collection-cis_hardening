@@ -80,8 +80,9 @@ cis_ubuntu2404_unused_filesystems_smbfs_common: false
 ### initial LV creation only. If you have existing partitions outside of this VG
 ### that you wish to maintain manually, set 'apply' to false for those partitions.
 ###
-### Ensure verified backups are available and execute during authorized maintenance
-### windows only as new VG, LV or filesystem creations will trigger a ** REBOOT **.
+### Ensure verified backups are available and execute disk changes during
+### authorized maintenance windows. When a VG, LV, filesystem or fstab entry is
+### created, a ** REBOOT ** will occur. LVM resizing is performed online.
 ### ----------------------------------------------------------------------------
 
 ### 1.1.2 - Configure Filesystem Partitions - Dedicated disk method

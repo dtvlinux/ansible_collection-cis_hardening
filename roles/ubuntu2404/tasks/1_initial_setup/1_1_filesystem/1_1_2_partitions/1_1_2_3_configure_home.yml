@@ -9,7 +9,7 @@
     fstype: "{{ cis_ubuntu2404_dedicated_disk_home_type }}"
     sync: true
   register: home_partition_result
-  notify: Reboot system
+  notify: dtvlinux.cis_hardening.reboot
 
 - name: 1.1.2.3.x | Configure /home | Task block
   when: home_partition_result is success
@@ -17,12 +17,12 @@
     - name: 1.1.2.3.2 | Ensure nodev option set on /home partition
       when: cis_ubuntu2404_home_nodev_apply | bool
       vars:
-        current_opts: "{{ (ansible_facts['mounts'] | selectattr('mount', 'equalto', '/home') | first).options | default('defaults') }}"
+        current_opts: "{{ ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options('/home') }}"
       ansible.posix.mount:
         path: /home
         src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_home_lvol }}"
         fstype: "{{ cis_ubuntu2404_dedicated_disk_home_type }}"
-        opts: "{{ (current_opts.split(',') + ['nodev']) | unique | join(',') }}"
+        opts: "{{ (current_opts.split(',') + ['nodev']) | unique | sort | join(',') }}"
         state: present
         backup: yes
       register: home_fstab_nodev
@@ -31,13 +31,11 @@
     - name: 1.1.2.3.3 | Ensure nosuid option set on /home partition
       when: cis_ubuntu2404_home_nosuid_apply | bool
       vars:
-        current_opts: >-
-          {{ home_fstab_nodev.opts if home_fstab_nodev is changed 
-             else (ansible_facts['mounts'] | selectattr('mount', 'equalto', '/home') | first).options | default('defaults') }}
+        current_opts: "{{ ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options('/home', [home_fstab_nodev]) }}"
       ansible.posix.mount:
         path: /home
         src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_home_lvol }}"
         fstype: "{{ cis_ubuntu2404_dedicated_disk_home_type }}"
-        opts: "{{ (current_opts.split(',') + ['nosuid']) | unique | join(',') }}"
+        opts: "{{ (current_opts.split(',') + ['nosuid']) | unique | sort | join(',') }}"
         state: present
       notify: Remount /home

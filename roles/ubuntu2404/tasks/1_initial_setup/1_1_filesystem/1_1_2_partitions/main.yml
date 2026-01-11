@@ -64,4 +64,3 @@
       ansible.builtin.include_tasks:
         file: 1_1_2_7_configure_var_log_audit.yml
       register: dedicated_var_log_audit_result
-

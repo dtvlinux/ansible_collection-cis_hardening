@@ -8,80 +8,116 @@ from __future__ import annotations
 
 DOCUMENTATION = r'''
 ---
-module: filesystem_sync
-short_description: Synchronize filesystem data to a new device or partition
+module: dedicated_disk_partition
+short_description: Manage LVM partitions and migrate filesystem data
 author:
   - Michael Lucraft (@dtvlinux)
-version_added: "1.0.0"
+version_added: "2.0.0"
 description:
-  - "This module synchronizes data from a source directory to a target block device via a temporary mount point."
-  - "It is designed for CIS hardening workflows where data must be moved to new, compliant partitions."
-  - "The module automatically creates the source directory if it is missing and skips synchronization if the source is empty."
-  - "Supports path-specific default excludes (e.g., for /var or /var/log) unless overridden by the 'excludes' option."
-  - "Ensures the temporary mount point is cleaned up after execution, even on failure."
-  - "Supports check mode to validate if a sync is required without modifying the target device."
+  - "This module ensures a dedicated LVM partition exists for a specific path and synchronizes existing data to it."
+  - "It manages the full lifecycle: creating PVs, VGs, and LVs; formatting the filesystem; and updating /etc/fstab."
+  - "If 'sync' is enabled, data from the source path is moved to the new device via a temporary mount point."
+  - "Designed for CIS hardening to move directories like /var, /var/log, or /home onto dedicated partitions."
+  - "Automatically handles LVM resizing if the target size differs from the current size."
 options:
   path:
     description:
-      - The source directory path to synchronize data from.
+      - The target mount point and source directory path (e.g., /var).
     required: true
     type: str
   device:
     description:
-      - The target block device (e.g., /dev/mapper/vg-lv) to mount and sync data into.
+      - The underlying block device to use for the LVM Physical Volume (e.g., /dev/sdb).
     required: true
     type: str
+  vg:
+    description:
+      - The Name of the Volume Group to create or use.
+    required: true
+    type: str
+  lv:
+    description:
+      - The Name of the Logical Volume to create or use.
+    required: true
+    type: str
+  size:
+    description:
+      - The desired size of the Logical Volume (e.g., 10G, 500M).
+    required: true
+    type: str
+  fstype:
+    description:
+      - The filesystem type to format the LV with.
+    default: ext4
+    type: str
+  sync:
+    description:
+      - Whether to synchronize existing data from the path to the new device.
+    default: true
+    type: bool
   excludes:
     description:
-      - "A list of rsync-style exclude patterns."
-      - "If omitted, the module uses internal defaults: ['log/*', 'tmp/*'] for /var and ['audit/*'] for /var/log."
-      - "Set to an empty list [] to force a sync with no exclusions."
+      - "A list of rsync-style exclude patterns used during the data migration phase."
+      - "If omitted, the module applies internal defaults based on the 'path' parameter."
+      - "Defaults for '/var': ['log/*', 'tmp/*']."
+      - "Defaults for '/var/log': ['audit/*']."
+      - "Setting this to an empty list [] overrides all defaults and forces a full sync (except for 'lost+found' which is applied in addition to defaults or user-provided excludes."
     required: false
     type: list
     elements: str
 '''
 
 EXAMPLES = r'''
-- name: Sync /var using internal module defaults
+- name: Harden /var by moving it to a dedicated 10GB LVM partition
   dtvlinux.cis_hardening.filesystem_sync:
     path: /var
-    device: /dev/mapper/vg-lv
+    device: /dev/sdb
+    vg: vg_data
+    lv: lv_var
+    size: 10G
+    fstype: xfs
+    sync: true
 
-- name: Sync /var with specific excludes via imported variable
+- name: Create a new partition for /home without syncing data
+  dtvlinux.cis_hardening.filesystem_sync:
+    path: /home
+    device: /dev/sdc
+    vg: vg_home
+    lv: lv_home
+    size: 20G
+    sync: false
+
+- name: Ensure /var is on a specific LV with excludes
   dtvlinux.cis_hardening.filesystem_sync:
     path: /var
-    device: /dev/mapper/vg-lv
+    device: /dev/sdd
+    vg: vg_audit
+    lv: lv_audit
+    size: 5G
     excludes:
-      - 'log/*'
-      - 'tmp/*'
-
-- name: Force a full sync with no exclusions
-  dtvlinux.cis_hardening.filesystem_sync:
-    path: "/home"
-    device: "/dev/sdb1"
-    excludes: []
+      - "log/*"
 '''
 
 RETURN = r'''
 ---
 changed:
-  description: Whether data was synchronized or a new source directory was created.
+  description: Whether any changes were made (LVM creation, FS formatting, or data sync).
   type: bool
   returned: always
-message:
-  description: Summary of the action performed.
+msg:
+  description: Summary of the operations performed.
   type: str
   returned: always
-applied_excludes:
-  description: The actual list of exclude patterns used during the rsync process.
-  type: list
-  returned: success
-  elements: str
 reboot_required:
-  description: Whether the changes require a system reboot to take effect.
+  description: Whether a reboot is required to complete the migration
   type: bool
   returned: always
+details:
+  description: Specific details about LVM and Sync actions.
+  type: dict
+  returned: always
 '''
+
 
 from ansible.module_utils.basic import AnsibleModule
 import os
@@ -253,8 +289,11 @@ class DedicatedDiskPartition:
             return False, "source empty; no sync needed"
 
         active_excludes = self.excludes if self.excludes is not None else default_excludes
+        always_excludes = ['lost+found/']
 
-        rsync_cmd = ['rsync', '-aAXH', '--delete', '--exclude=lost+found']
+        rsync_cmd = ['rsync', '-aAXH', '--delete']
+        for pattern in always_excludes:
+            rsync_cmd.append(f'--exclude={pattern}')
         for pattern in active_excludes:
             rsync_cmd.append(f'--exclude={pattern}')
         rsync_cmd.extend([f"{self.path}/", self.temp_mnt])
@@ -297,8 +336,8 @@ def main():
             vg=dict(type='str', required=True),
             lv=dict(type='str', required=True),
             size=dict(type='str', required=True),
-            fstype=dict(type='str', required=True),
-            sync=dict(type='bool', required=True),
+            fstype=dict(type='str', required=False, default='ext4'),
+            sync=dict(type='bool', required=False, default=True),
             path=dict(type='str', required=True),
             excludes=dict(type='list', elements='str', required=False),
         ),
@@ -342,7 +381,6 @@ def main():
         changed = True
 
     # Resize LV if needed
-    resize_performed = False
     if state['lv_exists']:
         try:
             requested_bytes = size_to_bytes(manager.size)
@@ -353,7 +391,6 @@ def main():
                 else:
                     manager.resize_lv()
                     change_msgs.append("resized LV and filesystem")
-                resize_performed = True
                 changed = True
         except ValueError as e:
             module.fail_json(msg=f"Size comparison failed: {str(e)}")

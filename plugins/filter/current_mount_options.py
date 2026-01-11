@@ -1,4 +1,23 @@
-# get_mount_options.py
+# plugins/filter/current_mount_options.py
+
+DOCUMENTATION = r'''
+  name: current_mount_options
+  author:
+    - Michael Lucraft (@dtvlinux)
+  short_description: Get current mount options from facts or task results
+  description: 
+    - This filter returns the mount options for a specific path.
+  options:
+    facts_mounts:
+      description: The ansible_facts['mounts'] list.
+      type: list
+      required: true
+    mount_path:
+      description: The path to check.
+      type: str
+      required: true
+'''
+
 class FilterModule(object):
     def filters(self):
         return {

@@ -26,6 +26,7 @@
         state: present
         backup: yes
       register: var_fstab_nodev
+      notify: Remount /var
 
     - name: 1.1.2.4.3 | Ensure nosuid option set on /var partition
       when: cis_ubuntu2404_var_nosuid_apply | bool
@@ -39,3 +40,4 @@
         fstype: "{{ cis_ubuntu2404_dedicated_disk_var_type }}"
         opts: "{{ (current_opts.split(',') + ['nosuid']) | unique | join(',') }}"
         state: present
+      notify: Remount /var

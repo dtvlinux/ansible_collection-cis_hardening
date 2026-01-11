@@ -1,0 +1,59 @@
+---
+- name: 1.1.2.5.1 | Ensure /var/tmp is a separate partition
+  dtvlinux.cis_hardening.dedicated_disk_partition:
+    path: /var/tmp
+    device: "{{ cis_ubuntu2404_dedicated_disk_device }}"
+    vg: "{{ cis_ubuntu2404_dedicated_disk_vgname }}"
+    lv: "{{ cis_ubuntu2404_dedicated_disk_var_tmp_lvol }}"
+    size: "{{ cis_ubuntu2404_dedicated_disk_var_tmp_size }}"
+    fstype: "{{ cis_ubuntu2404_dedicated_disk_var_tmp_type }}"
+    sync: true
+  register: var_tmp_partition_result
+  notify: Reboot system
+
+- name: 1.1.2.5.x | Configure /var/tmp | Task block
+  when: var_tmp_partition_result is success
+  block:
+    - name: 1.1.2.5.2 | Ensure nodev option set on /var/tmp partition
+      when: cis_ubuntu2404_var_tmp_nodev_apply | bool
+      vars:
+        current_opts: "{{ (ansible_facts['mounts'] | selectattr('mount', 'equalto', '/var/tmp') | first).options | default('defaults') }}"
+      ansible.posix.mount:
+        path: /var/tmp
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_var_tmp_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_var_tmp_type }}"
+        opts: "{{ (current_opts.split(',') + ['nodev']) | unique | join(',') }}"
+        state: present
+        backup: yes
+      register: var_tmp_fstab_nodev
+      notify: Remount /var/tmp
+
+    - name: 1.1.2.5.3 | Ensure nosuid option set on /var/tmp partition
+      when: cis_ubuntu2404_var_tmp_nosuid_apply | bool
+      vars:
+        current_opts: >-
+          {{ var_tmp_fstab_nodev.opts if var_tmp_fstab_nodev is changed 
+             else (ansible_facts['mounts'] | selectattr('mount', 'equalto', '/var/tmp') | first).options | default('defaults') }}
+      ansible.posix.mount:
+        path: /var/tmp
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_var_tmp_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_var_tmp_type }}"
+        opts: "{{ (current_opts.split(',') + ['nosuid']) | unique | join(',') }}"
+        state: present
+      register: var_tmp_fstab_nosuid
+      notify: Remount /var/tmp
+  
+    - name: 1.1.2.5.4 | Ensure noexec option set on /var/tmp partition
+      when: cis_ubuntu2404_var_tmp_noexec_apply | bool
+      vars:
+        current_opts: >-
+          {{ var_tmp_fstab_nosuid.opts if var_tmp_fstab_nosuid is changed
+             else (var_tmp_fstab_nodev.opts if var_tmp_fstab_nodev is changed 
+             else (ansible_facts['mounts'] | selectattr('mount', 'equalto', '/var/tmp') | first).options | default('defaults')) }}
+      ansible.posix.mount:
+        path: /var/tmp
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_var_tmp_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_var_tmp_type }}"
+        opts: "{{ (current_opts.split(',') + ['noexec']) | unique | join(',') }}"
+        state: present
+      notify: Remount /var/tmp

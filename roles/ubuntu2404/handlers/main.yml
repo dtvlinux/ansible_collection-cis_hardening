@@ -1,5 +1,6 @@
 ---
 - name: Reboot system
+  when: cis_ubuntu2404_reboot
   ansible.builtin.reboot:
     msg: Rebooting to apply CIS hardening changes
     connect_timeout: 5
@@ -9,16 +10,55 @@
     test_command: uptime
 
 - name: Remount /tmp
-  ansible.builtin.command:
-    cmd: mount -o remount /tmp
+  ansible.builtin.shell:
+    cmd: >
+      grep -q "{{ cis_ubuntu2404_dedicated_disk_tmp_lvol | replace('-', '--') }}" /proc/mounts &&
+      mount -o remount /tmp
   changed_when: true
+  failed_when: false
 
 - name: Remount /dev/shm
   ansible.builtin.command:
     cmd: mount -o remount /dev/shm
   changed_when: true
+  failed_when: false
 
 - name: Remount /home
-  ansible.builtin.command:
-    cmd: mount -o remount /home
+  ansible.builtin.shell:
+    cmd: >
+      grep -q "{{ cis_ubuntu2404_dedicated_disk_home_lvol | replace('-', '--') }}" /proc/mounts &&
+      mount -o remount /home
   changed_when: true
+  failed_when: false
+
+- name: Remount /var
+  ansible.builtin.shell:
+    cmd: >
+      grep -q "{{ cis_ubuntu2404_dedicated_disk_var_lvol | replace('-', '--') }}" /proc/mounts &&
+      mount -o remount /var
+  changed_when: true
+  failed_when: false
+
+- name: Remount /var/tmp
+  ansible.builtin.shell:
+    cmd: >
+      grep -q "{{ cis_ubuntu2404_dedicated_disk_var_tmp_lvol | replace('-', '--') }}" /proc/mounts &&
+      mount -o remount /var/tmp
+  changed_when: true
+  failed_when: false
+
+- name: Remount /var/log
+  ansible.builtin.shell:
+    cmd: >
+      grep -q "{{ cis_ubuntu2404_dedicated_disk_var_log_lvol | replace('-', '--') }}" /proc/mounts &&
+      mount -o remount /var/log
+  changed_when: true
+  failed_when: false
+
+- name: Remount /var/log/audit
+  ansible.builtin.shell:
+    cmd: >
+      grep -q "{{ cis_ubuntu2404_dedicated_disk_var_log_audit_lvol | replace('-', '--') }}" /proc/mounts &&
+      mount -o remount /var/log/audit
+  changed_when: true
+  failed_when: false

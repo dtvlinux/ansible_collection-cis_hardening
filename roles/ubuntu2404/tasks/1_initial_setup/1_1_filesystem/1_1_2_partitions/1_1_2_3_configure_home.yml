@@ -26,6 +26,7 @@
         state: present
         backup: yes
       register: home_fstab_nodev
+      notify: Remount /home
 
     - name: 1.1.2.3.3 | Ensure nosuid option set on /home partition
       when: cis_ubuntu2404_home_nosuid_apply | bool
@@ -39,3 +40,4 @@
         fstype: "{{ cis_ubuntu2404_dedicated_disk_home_type }}"
         opts: "{{ (current_opts.split(',') + ['nosuid']) | unique | join(',') }}"
         state: present
+      notify: Remount /home

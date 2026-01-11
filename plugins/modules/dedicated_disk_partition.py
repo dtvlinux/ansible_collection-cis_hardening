@@ -87,11 +87,7 @@ import re
 
 class DedicatedDiskPartition:
     FILE_FSTAB = '/etc/fstab'
-    FILE_MODE = 0o644
-    FILE_UID = 0
-    FILE_GID = 0
     FSTAB_OPTS = 'defaults'
-    FSTAB_DUMP = 0
 
     def __init__(self, module):
         self.module = module
@@ -213,8 +209,7 @@ class DedicatedDiskPartition:
             changed = True
 
         if not has_correct:
-            fstab_pass = 0 if self.path in ('/tmp', '/var/tmp') else 2
-            new_line = f"{self.lv_device} {self.path} {current_fstype} {self.FSTAB_OPTS} {self.FSTAB_DUMP} {fstab_pass}\n"
+            new_line = f"{self.lv_device} {self.path} {current_fstype} {self.FSTAB_OPTS} 0 0\n"
             lines.append(new_line)
             changed = True
 
@@ -255,41 +250,6 @@ class DedicatedDiskPartition:
                 os.rmdir(self.temp_mnt)
 
         return True, "synced data"
-    
-    def disable_mount_unit(self):
-        unit_name = self.path.strip('/').replace('/', '-') + ".mount"
-
-        changed = False
-        rc, _, _ = self.module.run_command(['systemctl', 'disable', unit_name])
-        if rc == 0:
-            changed = True
-
-        rc_mask, _, _ = self.module.run_command(['systemctl', 'mask', unit_name])
-        if rc_mask == 0:
-            changed = True
-            
-        if changed:
-            self.module.run_command(['systemctl', 'daemon-reload'])
-            
-        return changed
-    
-    def mask_mount_unit(self):
-        unit = self.path.lstrip('/').replace('/', '-') + '.mount'
-        if not unit:
-            return False, None
-
-        rc, out, err = self.module.run_command(['systemctl', 'is-enabled', unit])
-        if rc != 0 or out.strip() == 'masked':
-            return False, None
-
-        if self.module.check_mode:
-            return True, unit
-
-        rc, _, err = self.module.run_command(['systemctl', 'mask', unit])
-        if rc != 0:
-            self.module.fail_json(msg=f"Failed to mask {unit}: {err}")
-
-        return True, unit
 
     def validate_current_state(self):
         results = {
@@ -400,14 +360,6 @@ def main():
         else:
             would_change_msgs.append("would sync data")
         changed |= sync_changed
-
-    mask_changed, masked_unit = manager.mask_mount_unit()
-    changed |= mask_changed
-    if mask_changed and masked_unit:
-        if module.check_mode:
-            would_change_msgs.append(f"would mask conflicting mount unit {masked_unit}")
-        else:
-            change_msgs.append(f"masked conflicting mount unit {masked_unit}")
 
     if module.check_mode:
         module.exit_json(

@@ -15,16 +15,19 @@ releases:
   0.2.0:
     changes:
       major_changes:
-      - Filesystem sync module replaced with a module that does all but ensure nodev, nosuid & noexec are present.
-      - Will now resize lvm online.
       - Code refactering, better directory layout and file names
-      - Two new filters (current_mount_options and dedicated_disk_size) created to save on repitition or multiple tasks.
-      - Reboot handler now using a listener and results checks to ensure rebooting only when required
+      - Filesystem sync module replaced with a module that does all but ensure nodev,
+        nosuid & noexec are present.
+      - Reboot handler now using a listener and results checks to ensure rebooting
+        only when required
+      - Two new filters (current_mount_options and dedicated_disk_size) created to
+        save on repitition or multiple tasks.
+      - Will now resize lvm online.
     modules:
+    - description: Manage LVM partitions and migrate filesystem data.
+      name: dedicated_disk_partition
+      namespace: ''
     - description: Disable filesystem kernel modules.
       name: disable_modules
-      namespace: ''
-    - description: Synchronize filesystem data to a new device or partition.
-      name: dedicated_disk_partition
       namespace: ''
     release_date: '2026-01-12'

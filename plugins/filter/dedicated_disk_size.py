@@ -7,7 +7,6 @@ DOCUMENTATION = r'''
   short_description: Get the size of a specific disk from ansible_devices
   description:
     - This filter retrieves the human-readable size of a disk device from the ansible_devices fact.
-  positional_vars: ["device_name", "ansible_devices"]
   options:
     device_name:
       description: The name of the device (e.g., 'sda').

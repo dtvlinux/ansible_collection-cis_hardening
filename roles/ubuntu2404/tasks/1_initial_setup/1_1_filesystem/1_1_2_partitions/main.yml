@@ -3,24 +3,21 @@
   when: cis_ubuntu2404_dedicated_disk_apply | bool
   tags: always
   block:
-    - name: 1.1.2 | Configure filesystem partitions | Resolve dedicated disk symlinks
-      ansible.builtin.stat:
-        path: "{{ cis_ubuntu2404_dedicated_disk_device }}"
-      register: disk_stat
+    - name: 1.1.2 | Configure filesystem partitions | Resolve device real name
+      ansible.builtin.shell: "basename $(readlink -f {{ cis_ubuntu2404_dedicated_disk_device }})"
+      register: resolved_device_name
+      changed_when: false
 
-    - name: 1.1.2 | Configure filesystem partitions | Register dedicated disk size
-      ansible.builtin.set_fact:
-        disk_size_bytes: >-
-          {% set disk_name = disk_stat.stat.lnk_source | default(disk_stat.stat.path) | basename %}
-          {{ ansible_facts['devices'][disk_name]['size'] | ansible.builtin.human_to_bytes }}
-
-    - name: 1.1.2 Configure filesystem partitions | Dedicated disk space check
+    - name: 1.1.2 | Configure filesystem partitions | Dedicated disk check
+      vars:
+        actual_size_bytes: >-
+          {{ resolved_device_name.stdout | dtvlinux.cis_hardening.dedicated_disk_size(ansible_facts['devices']) | ansible.builtin.human_to_bytes }}
       ansible.builtin.assert:
-        that: disk_size_bytes | float >= cis_ubuntu2404_required_bytes | float
-        fail_msg: >
+        that: actual_size_bytes | float >= cis_ubuntu2404_required_bytes | float
+        fail_msg: >-
           Insufficient space on {{ cis_ubuntu2404_dedicated_disk_device }}.
-          Required: {{ (cis_ubuntu2404_required_bytes | int) | ansible.builtin.human_readable }}
-          Available: {{ (disk_size_bytes | int) | ansible.builtin.human_readable }}
+          Required: {{ cis_ubuntu2404_required_bytes | ansible.builtin.human_readable }}
+          Available: {{ actual_size_bytes | ansible.builtin.human_readable }}
         success_msg: "Space check passed for {{ cis_ubuntu2404_dedicated_disk_device }}."
 
 - name: 1.1.2.2 | Configure /dev/shm

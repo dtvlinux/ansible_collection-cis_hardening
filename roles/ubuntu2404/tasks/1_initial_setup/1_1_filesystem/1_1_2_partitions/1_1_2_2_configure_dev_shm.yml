@@ -1,39 +1,62 @@
 ---
-- name: 1.1.2.2.1 | Ensure /dev/shm is a separate partition | Gather /dev/shm mount info
-  ansible.builtin.shell: grep ' /dev/shm ' /proc/mounts | awk '{print $3,$4}'
-  register: dev_shm_info
-  changed_when: false
+- name: 1.1.2.2.1 | Ensure /dev/shm is a separate partition | Task block
+  tags:
+    - cis_ubuntu2404_rule_1_1_2_2_1
+    - cis_ubuntu2404_level_1_server
+    - cis_ubuntu2404_level_1_workstation
+    - cis_ubuntu2404_control_4_8
+    - cis_ubuntu2404_ig_2
+    - cis_ubuntu2404_ig_3
+  block:
+    - name: 1.1.2.2.1 | Ensure /dev/shm is a separate partition | Gather /dev/shm mount info
+      ansible.builtin.shell:
+        cmd: grep ' /dev/shm ' /proc/mounts | awk '{print $3,$4}'
+      register: dev_shm_info
+      changed_when: false
+      
+    - name: 1.1.2.2.1 | Ensure /dev/shm is a separate partition | Mount
+      ansible.posix.mount:
+        path: /dev/shm
+        src: tmpfs
+        fstype: tmpfs
+        opts: "{{ dev_shm_info.stdout.split()[1] | default('defaults') }}"
+        dump: 0
+        passno: 0
+        state: mounted
 
-- name: 1.1.2.2.1 | Ensure /dev/shm is a separate partition | Mount
-  ansible.posix.mount:
-    path: /dev/shm
-    src: tmpfs
-    fstype: tmpfs
-    opts: "{{ dev_shm_info.stdout.split()[1] | default('defaults') }}"
-    dump: 0
-    passno: 0
-    state: mounted
+- name: 1.1.2.2.x | Ensure option set on /dev/shm | Task block
+  tags:
+    - cis_ubuntu2404_level_1_server
+    - cis_ubuntu2404_level_1_workstation
+    - cis_ubuntu2404_control_3_3
+    - cis_ubuntu2404_ig_1
+    - cis_ubuntu2404_ig_2
+    - cis_ubuntu2404_ig_3
+  block:
+    - name: 1.1.2.2.2 | Ensure nodev option set on /dev/shm partition
+      when: cis_ubuntu2404_dev_shm_nodev_apply | bool
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^(\S+\s+/dev/shm\s+\S+\s+)(?!.*\bnodev\b)(\S+)(\s+.*)$'
+        replace: '\1\2,nodev\3'
+      notify: Remount /dev/shm
+      tags: cis_ubuntu2404_rule_1_1_2_2_2
 
-- name: 1.1.2.1.2 | Ensure nodev option set on /dev/shm partition
-  when: cis_ubuntu2404_dev_shm_nodev_apply | bool
-  ansible.builtin.replace:
-    path: /etc/fstab
-    regexp: '^(\S+\s+/dev/shm\s+\S+\s+)(?!.*\bnodev\b)(\S+)(\s+.*)$'
-    replace: '\1\2,nodev\3'
-  notify: Remount /dev/shm
   
-- name: 1.1.2.1.3 | Ensure nosuid option set on /dev/shm partition
-  when: cis_ubuntu2404_dev_shm_nosuid_apply | bool
-  ansible.builtin.replace:
-    path: /etc/fstab
-    regexp: '^(\S+\s+/dev/shm\s+\S+\s+)(?!.*\bnosuid\b)(\S+)(\s+.*)$'
-    replace: '\1\2,nosuid\3'
-  notify: Remount /dev/shm
+    - name: 1.1.2.2.3 | Ensure nosuid option set on /dev/shm partition
+      when: cis_ubuntu2404_dev_shm_nosuid_apply | bool
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^(\S+\s+/dev/shm\s+\S+\s+)(?!.*\bnosuid\b)(\S+)(\s+.*)$'
+        replace: '\1\2,nosuid\3'
+      notify: Remount /dev/shm
+      tags: cis_ubuntu2404_rule_1_1_2_2_3
 
-- name: 1.1.2.1.4 | Ensure noexec option set on /dev/shm partition
-  when: cis_ubuntu2404_dev_shm_noexec_apply | bool
-  ansible.builtin.replace:
-    path: /etc/fstab
-    regexp: '^(\S+\s+/dev/shm\s+\S+\s+)(?!.*\bnoexec\b)(\S+)(\s+.*)$'
-    replace: '\1\2,noexec\3'
-  notify: Remount /dev/shm
+    - name: 1.1.2.2.4 | Ensure noexec option set on /dev/shm partition
+      when: cis_ubuntu2404_dev_shm_noexec_apply | bool
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^(\S+\s+/dev/shm\s+\S+\s+)(?!.*\bnoexec\b)(\S+)(\s+.*)$'
+        replace: '\1\2,noexec\3'
+      notify: Remount /dev/shm
+      tags: cis_ubuntu2404_rule_1_1_2_2_4

@@ -5,6 +5,7 @@
     modules: cramfs
     config_file: "{{ cis_ubuntu2404_cramfs_conf }}"
   tags:
+    - cis_ubuntu2404_rule_1_1_1_1
     - cis_ubuntu2404_level_1_server
     - cis_ubuntu2404_level_1_workstation
     - cis_ubuntu2404_control_4_8
@@ -17,6 +18,7 @@
     modules: freevxfs
     config_file: "{{ cis_ubuntu2404_freevxfs_conf }}"
   tags:
+    - cis_ubuntu2404_rule_1_1_1_2
     - cis_ubuntu2404_level_1_server
     - cis_ubuntu2404_level_1_workstation
     - cis_ubuntu2404_control_4_8
@@ -29,6 +31,7 @@
     modules: hfs
     config_file: "{{ cis_ubuntu2404_hfs_conf }}"
   tags:
+    - cis_ubuntu2404_rule_1_1_1_3
     - cis_ubuntu2404_level_1_server
     - cis_ubuntu2404_level_1_workstation
     - cis_ubuntu2404_control_4_8
@@ -41,6 +44,7 @@
     modules: hfsplus
     config_file: "{{ cis_ubuntu2404_hfsplus_conf }}"
   tags:
+    - cis_ubuntu2404_rule_1_1_1_4
     - cis_ubuntu2404_level_1_server
     - cis_ubuntu2404_level_1_workstation
     - cis_ubuntu2404_control_4_8
@@ -53,6 +57,7 @@
     modules: jffs2
     config_file: "{{ cis_ubuntu2404_jffs2_conf }}"
   tags:
+    - cis_ubuntu2404_rule_1_1_1_5
     - cis_ubuntu2404_level_1_server
     - cis_ubuntu2404_level_1_workstation
     - cis_ubuntu2404_control_4_8
@@ -65,6 +70,7 @@
     modules: overlayfs
     config_file: "{{ cis_ubuntu2404_overlayfs_conf }}"
   tags:
+    - cis_ubuntu2404_rule_1_1_1_6
     - cis_ubuntu2404_level_2_server
     - cis_ubuntu2404_level_2_workstation
     - cis_ubuntu2404_control_4_8
@@ -77,6 +83,7 @@
     modules: squashfs
     config_file: "{{ cis_ubuntu2404_squashfs_conf }}"
   tags:
+    - cis_ubuntu2404_rule_1_1_1_7
     - cis_ubuntu2404_level_2_server
     - cis_ubuntu2404_level_2_workstation
     - cis_ubuntu2404_control_4_8
@@ -89,6 +96,7 @@
     modules: udf
     config_file: "{{ cis_ubuntu2404_udf_conf }}"
   tags:
+    - cis_ubuntu2404_rule_1_1_1_8
     - cis_ubuntu2404_level_2_server
     - cis_ubuntu2404_level_2_workstation
     - cis_ubuntu2404_control_4_8
@@ -101,6 +109,7 @@
     modules: usb-storage
     config_file: "{{ cis_ubuntu2404_usb_storage_conf }}"
   tags:
+    - cis_ubuntu2404_rule_1_1_1_9
     - cis_ubuntu2404_level_1_server
     - cis_ubuntu2404_level_2_workstation
     - cis_ubuntu2404_control_10_3
@@ -114,6 +123,7 @@
     modules: "{{ cis_ubuntu2404_unused_filesystems_module_list }}"
     config_file: "{{ cis_ubuntu2404_unused_filesystems_conf }}"
   tags:
+    - cis_ubuntu2404_rule_1_1_1_10
     - cis_ubuntu2404_level_1_server
     - cis_ubuntu2404_level_1_workstation
     - cis_ubuntu2404_control_4_8

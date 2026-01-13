@@ -39,7 +39,7 @@
         path: /home
         src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_home_lvol }}"
         fstype: "{{ cis_ubuntu2404_dedicated_disk_home_type }}"
-        opts: "{{ (current_opts.split(',') + ['nodev']) | unique | sort | join(',') }}"
+        opts: "{{ (current_opts.split(',') + ['nodev']) | unique | join(',') }}"
         state: present
         backup: yes
       register: home_fstab_nodev
@@ -59,7 +59,7 @@
         path: /home
         src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_home_lvol }}"
         fstype: "{{ cis_ubuntu2404_dedicated_disk_home_type }}"
-        opts: "{{ (current_opts.split(',') + ['nosuid']) | unique | sort | join(',') }}"
+        opts: "{{ (current_opts.split(',') + ['nosuid']) | unique | join(',') }}"
         state: present
       notify: Remount /home
       tags: cis_ubuntu2404_rule_1_1_2_3_3

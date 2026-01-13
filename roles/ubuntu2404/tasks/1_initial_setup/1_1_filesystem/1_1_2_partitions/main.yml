@@ -18,20 +18,19 @@
              | dtvlinux.cis_hardening.dedicated_disk_size(ansible_facts['devices']) 
              | ansible.builtin.human_to_bytes }}
         usable_size_bytes: "{{ raw_size_bytes | float - lvm_overhead_bytes | float }}"
-      ansible.builtin.assert:
-        that: 
-          - device_exists
-          - usable_size_bytes | float >= cis_ubuntu2404_required_bytes | float
-        fail_msg: >-
-          {% if not device_exists %}
-          Device {{ cis_ubuntu2404_dedicated_disk_device }} not found.
-          {% else %}
-          Insufficient USABLE space (Accounted for LVM overhead). 
-          Required: {{ cis_ubuntu2404_required_bytes | ansible.builtin.human_readable }}
-          Available (Raw): {{ raw_size_bytes | ansible.builtin.human_readable }}
-          Available (Usable): {{ usable_size_bytes | ansible.builtin.human_readable }}
-          {% endif %}
-
+      ansible.builtin.set_fact:
+        dedicated_disk_check:
+          passed: "{{ device_exists and (usable_size_bytes | float >= cis_ubuntu2404_required_bytes | float) }}"
+          device_found: "{{ device_exists }}"
+          available_bytes: "{{ usable_size_bytes }}"
+          msg: >-
+            {%- if not device_exists -%}
+            Device {{ cis_ubuntu2404_dedicated_disk_device }} not found.
+            {%- else -%}
+            Space Check: {{ 'Passed' if (usable_size_bytes | float >= cis_ubuntu2404_required_bytes | float) else 'Failed' }}.
+            Available: {{ usable_size_bytes | ansible.builtin.human_readable }},
+            required: {{ cis_ubuntu2404_required_bytes | ansible.builtin.human_readable }}
+            {%- endif -%}
 
 - name: 1.1.2.2 | Configure /dev/shm
   when: cis_ubuntu2404_dev_shm_apply | bool
@@ -39,9 +38,8 @@
     file: 1_1_2_2_configure_dev_shm.yml
   tags: always
 
-
 - name: 1.1.2 | Configure filesystem partitions
-  when: cis_ubuntu2404_dedicated_disk_apply | bool
+  when: dedicated_disk_check.passed
   block:
     - name: 1.1.2.1 | Configure /tmp
       when: cis_ubuntu2404_dedicated_disk_tmp_apply | bool

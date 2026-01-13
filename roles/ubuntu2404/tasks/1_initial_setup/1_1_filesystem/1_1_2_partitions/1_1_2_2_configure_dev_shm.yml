@@ -23,8 +23,13 @@
         dump: 0
         passno: 0
         state: mounted
+      register: dev_shm_fstab
+
 
 - name: 1.1.2.2.x | Ensure option set on /dev/shm | Task block
+  when:
+    - dev_shm_fstab is defined
+    - dev_shm_fstab is success
   tags:
     - cis_ubuntu2404_level_1_server
     - cis_ubuntu2404_level_1_workstation
@@ -41,7 +46,6 @@
         replace: '\1\2,nodev\3'
       notify: Remount /dev/shm
       tags: cis_ubuntu2404_rule_1_1_2_2_2
-
   
     - name: 1.1.2.2.3 | Ensure nosuid option set on /dev/shm partition
       when: cis_ubuntu2404_dev_shm_nosuid_apply | bool

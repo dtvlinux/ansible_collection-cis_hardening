@@ -10,9 +10,26 @@
     sync: true
   register: var_log_audit_partition_result
   notify: dtvlinux.cis_hardening.reboot
+  tags:
+    - cis_ubuntu2404_rule_1_1_2_7_1
+    - cis_ubuntu2404_level_2_server
+    - cis_ubuntu2404_level_2_workstation
+    - cis_ubuntu2404_control_8_3
+    - cis_ubuntu2404_ig_1
+    - cis_ubuntu2404_ig_2
+    - cis_ubuntu2404_ig_3
 
 - name: 1.1.2.7.x | Configure /var/log/audit | Task block
-  when: var_log_audit_partition_result is success
+  when:
+    - var_log_audit_partition_result is defined
+    - var_log_audit_partition_result is success
+  tags:
+    - cis_ubuntu2404_level_1_server
+    - cis_ubuntu2404_level_1_workstation
+    - cis_ubuntu2404_control_3_3
+    - cis_ubuntu2404_ig_1
+    - cis_ubuntu2404_ig_2
+    - cis_ubuntu2404_ig_3
   block:
     - name: 1.1.2.7.2 | Ensure nodev option set on /var/log/audit partition
       when: cis_ubuntu2404_var_log_audit_nodev_apply | bool
@@ -27,11 +44,18 @@
         backup: yes
       register: var_log_audit_fstab_nodev
       notify: Remount /var/log/audit
+      tags: cis_ubuntu2404_rule_1_1_2_7_2
 
     - name: 1.1.2.7.3 | Ensure nosuid option set on /var/log/audit partition
       when: cis_ubuntu2404_var_log_audit_nosuid_apply | bool
       vars:
-        current_opts: "{{ ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options('/var/log/audit', [var_log_audit_fstab_nodev]) }}"
+        current_opts: >-
+          {{
+            ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options(
+              '/var/log/audit',
+              [var_log_audit_fstab_nodev | default(omit)] | reject('sameas', omit) | list
+            )
+          }}
       ansible.posix.mount:
         path: /var/log/audit
         src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_var_log_audit_lvol }}"
@@ -40,11 +64,21 @@
         state: present
       register: var_log_audit_fstab_nosuid
       notify: Remount /var/log/audit
+      tags: cis_ubuntu2404_rule_1_1_2_7_3
 
     - name: 1.1.2.7.4 | Ensure noexec option set on /var/log/audit partition
       when: cis_ubuntu2404_var_log_audit_noexec_apply | bool
       vars:
-         current_opts: "{{ ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options('/var/log/audit', [var_log_audit_fstab_nodev, var_log_audit_fstab_nosuid]) }}"
+        current_opts: >-
+          {{
+            ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options(
+              '/var/log/audit',
+              [
+                var_log_audit_fstab_nodev | default(omit),
+                var_log_audit_fstab_nosuid | default(omit)
+              ] | reject('sameas', omit) | list
+            )
+          }}
       ansible.posix.mount:
         path: /var/log/audit
         src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_var_log_audit_lvol }}"
@@ -52,3 +86,4 @@
         opts: "{{ (current_opts.split(',') + ['noexec']) | unique | sort | join(',') }}"
         state: present
       notify: Remount /var/log/audit
+      tags: cis_ubuntu2404_rule_1_1_2_7_4

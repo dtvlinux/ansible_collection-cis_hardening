@@ -49,7 +49,12 @@
     - name: 1.1.2.3.3 | Ensure nosuid option set on /home partition
       when: cis_ubuntu2404_home_nosuid_apply | bool
       vars:
-        current_opts: "{{ ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options('/home', [home_fstab_nodev]) }}"
+        current_opts: >-
+          {{
+            ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options(
+              '/home', [home_fstab_nodev | default(omit)] | reject('sameas', omit) | list
+            )
+          }}
       ansible.posix.mount:
         path: /home
         src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_home_lvol }}"

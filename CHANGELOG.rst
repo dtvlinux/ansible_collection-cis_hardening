@@ -4,6 +4,23 @@ Dtvlinux.Cis\_Hardening Release Notes
 
 .. contents:: Topics
 
+v0.2.1
+======
+
+Release Summary
+---------------
+
+Added tagging and amended when clause logic for section 1.1 Filesystem section.
+
+New Plugins
+-----------
+
+Filter
+~~~~~~
+
+- dtvlinux.cis_hardening.current_mount_options - Get current mount options from facts or task results
+- dtvlinux.cis_hardening.dedicated_disk_size - Get the size of a specific disk from ansible_devices
+
 v0.2.0
 ======
 
@@ -28,7 +45,7 @@ v0.1.1
 Major Changes
 -------------
 
-- Initial deployment covering CIS Ubuntu 24.04 benmarking topic 1.1 Filesystem
+- Initial deployment covering CIS Ubuntu 24.04 benchmarking topic 1.1 Filesystem
 
 New Modules
 -----------

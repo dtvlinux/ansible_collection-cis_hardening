@@ -3,8 +3,7 @@
   listen: dtvlinux.cis_hardening.reboot
   when:
     - cis_ubuntu2404_reboot
-    - 
-      (
+    - (
         tmp_partition_result.reboot_required | default(false) | bool or
         home_partition_result.reboot_required | default(false) | bool or
         var_partition_result.reboot_required | default(false) | bool or
@@ -38,12 +37,30 @@
   failed_when: false
 
 - name: Remount /dev/shm
+  when: >
+    not (
+      (tmp_partition_result.reboot_required | default(false)) or
+      (home_partition_result.reboot_required | default(false)) or
+      (var_partition_result.reboot_required | default(false)) or
+      (var_tmp_partition_result.reboot_required | default(false)) or
+      (var_log_partition_result.reboot_required | default(false)) or
+      (var_log_audit_partition_result.reboot_required | default(false))
+    )
   ansible.builtin.command:
     cmd: mount -o remount /dev/shm
   changed_when: true
   failed_when: false
 
 - name: Remount /home
+  when: >
+    not (
+      (tmp_partition_result.reboot_required | default(false)) or
+      (home_partition_result.reboot_required | default(false)) or
+      (var_partition_result.reboot_required | default(false)) or
+      (var_tmp_partition_result.reboot_required | default(false)) or
+      (var_log_partition_result.reboot_required | default(false)) or
+      (var_log_audit_partition_result.reboot_required | default(false))
+    )
   ansible.builtin.shell:
     cmd: >
       grep -q "{{ cis_ubuntu2404_dedicated_disk_home_lvol | replace('-', '--') }}" /proc/mounts &&
@@ -52,6 +69,15 @@
   failed_when: false
 
 - name: Remount /var
+  when: >
+    not (
+      (tmp_partition_result.reboot_required | default(false)) or
+      (home_partition_result.reboot_required | default(false)) or
+      (var_partition_result.reboot_required | default(false)) or
+      (var_tmp_partition_result.reboot_required | default(false)) or
+      (var_log_partition_result.reboot_required | default(false)) or
+      (var_log_audit_partition_result.reboot_required | default(false))
+    )
   ansible.builtin.shell:
     cmd: >
       grep -q "{{ cis_ubuntu2404_dedicated_disk_var_lvol | replace('-', '--') }}" /proc/mounts &&
@@ -60,6 +86,15 @@
   failed_when: false
 
 - name: Remount /var/tmp
+  when: >
+    not (
+      (tmp_partition_result.reboot_required | default(false)) or
+      (home_partition_result.reboot_required | default(false)) or
+      (var_partition_result.reboot_required | default(false)) or
+      (var_tmp_partition_result.reboot_required | default(false)) or
+      (var_log_partition_result.reboot_required | default(false)) or
+      (var_log_audit_partition_result.reboot_required | default(false))
+    )
   ansible.builtin.shell:
     cmd: >
       grep -q "{{ cis_ubuntu2404_dedicated_disk_var_tmp_lvol | replace('-', '--') }}" /proc/mounts &&
@@ -68,6 +103,15 @@
   failed_when: false
 
 - name: Remount /var/log
+  when: >
+    not (
+      (tmp_partition_result.reboot_required | default(false)) or
+      (home_partition_result.reboot_required | default(false)) or
+      (var_partition_result.reboot_required | default(false)) or
+      (var_tmp_partition_result.reboot_required | default(false)) or
+      (var_log_partition_result.reboot_required | default(false)) or
+      (var_log_audit_partition_result.reboot_required | default(false))
+    )
   ansible.builtin.shell:
     cmd: >
       grep -q "{{ cis_ubuntu2404_dedicated_disk_var_log_lvol | replace('-', '--') }}" /proc/mounts &&
@@ -76,6 +120,15 @@
   failed_when: false
 
 - name: Remount /var/log/audit
+  when: >
+    not (
+      (tmp_partition_result.reboot_required | default(false)) or
+      (home_partition_result.reboot_required | default(false)) or
+      (var_partition_result.reboot_required | default(false)) or
+      (var_tmp_partition_result.reboot_required | default(false)) or
+      (var_log_partition_result.reboot_required | default(false)) or
+      (var_log_audit_partition_result.reboot_required | default(false))
+    )
   ansible.builtin.shell:
     cmd: >
       grep -q "{{ cis_ubuntu2404_dedicated_disk_var_log_audit_lvol | replace('-', '--') }}" /proc/mounts &&

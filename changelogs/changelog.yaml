@@ -1,33 +1,49 @@
 ancestor: null
 releases:
   0.1.1:
-    changes:
-      major_changes:
-      - Initial deployment covering CIS Ubuntu 24.04 benmarking topic 1.1 Filesystem
-    modules:
-    - description: Disable filesystem kernel modules.
-      name: disable_modules
-      namespace: ''
-    - description: Synchronize filesystem data to a new device or partition.
-      name: filesystem_sync
-      namespace: ''
     release_date: '2026-01-05'
-  0.2.0:
     changes:
       major_changes:
-      - Code refactering, better directory layout and file names
-      - Filesystem sync module replaced with a module that does all but ensure nodev,
-        nosuid & noexec are present.
-      - Reboot handler now using a listener and results checks to ensure rebooting
-        only when required
-      - Two new filters (current_mount_options and dedicated_disk_size) created to
-        save on repitition or multiple tasks.
-      - Will now resize lvm online.
+        - Initial deployment covering CIS Ubuntu 24.04 benmarking topic 1.1 Filesystem
     modules:
-    - description: Manage LVM partitions and migrate filesystem data.
-      name: dedicated_disk_partition
-      namespace: ''
-    - description: Disable filesystem kernel modules.
-      name: disable_modules
-      namespace: ''
+      - description: Disable filesystem kernel modules.
+        name: disable_modules
+        namespace: ''
+      - description: Synchronize filesystem data to a new device or partition.
+        name: filesystem_sync
+        namespace: ''
+  0.2.0:
     release_date: '2026-01-12'
+    changes:
+      major_changes:
+        - Code refactering, better directory layout and file names
+        - Filesystem sync module replaced with a module that does all but ensure nodev,
+          nosuid & noexec are present.
+        - Reboot handler now using a listener and results checks to ensure rebooting
+          only when required
+        - Two new filters (current_mount_options and dedicated_disk_size) created to
+          save on repitition or multiple tasks.
+        - Will now resize lvm online.
+    modules:
+      - description: Manage LVM partitions and migrate filesystem data.
+        name: dedicated_disk_partition
+        namespace: ''
+      - description: Disable filesystem kernel modules.
+        name: disable_modules
+        namespace: ''
+  0.2.1:
+    release_date: '2026-01-14'
+    changes:
+      release_summary: Added tagging and amended when clause logic to for 1.1 Filesystem section.
+      minor changes:
+        - Added tags to all tasks under section 1.1 Filesystem.
+        - As tagging now added, when clause logic needed updating to perform defined checks on prerequisite tasks.
+        - Added to change log missing plugin filters.
+    plugins:
+      filter:
+        - name: current_mount_options
+          description: Get current mount options from facts or task results
+          namespace: null
+        - name: dedicated_disk_size
+          description: Get the size of a specific disk from ansible_devices
+          namespace: null

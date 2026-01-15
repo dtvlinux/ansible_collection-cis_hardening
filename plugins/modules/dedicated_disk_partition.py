@@ -118,7 +118,6 @@ details:
   returned: always
 '''
 
-
 from ansible.module_utils.basic import AnsibleModule
 import os
 import stat
@@ -161,20 +160,17 @@ class DedicatedDiskPartition:
         return stat.S_IFMT(dev_stat.st_mode) == stat.S_IFBLK
 
     def check_device_in_use(self):
-        # Check if it's a PV first
         rc, out, err = self.module.run_command(['pvs', '--noheadings', '-o', 'vg_name', self.device])
         if rc == 0:
             vg_name = out.strip()
             if vg_name and vg_name != self.vg:
-                return True  # Part of different VG
-            return False  # Already in our VG or orphan, ok
+                return True
+            return False
 
-        # If not PV, check if device has filesystem (non-LVM)
         rc, out, err = self.module.run_command(['blkid', '-s', 'TYPE', '-o', 'value', self.device])
         if rc == 0 and out.strip():
             return True
 
-        # Check for partitions/children or mounts
         rc, out, err = self.module.run_command(['lsblk', '-J', '-o', 'NAME,TYPE,MOUNTPOINTS', self.device])
         if rc != 0:
             return True
@@ -190,7 +186,7 @@ class DedicatedDiskPartition:
     def ensure_pv(self):
         rc, _, _ = self.module.run_command(['pvs', self.device])
         if rc == 0:
-            return False  # Already PV
+            return False
         self.module.run_command(['pvcreate', self.device], check_rc=True)
         return True
 
@@ -201,7 +197,6 @@ class DedicatedDiskPartition:
     def ensure_vg(self):
         changed = False
         if not self.check_vg_exists():
-            # Check if orphan PV
             rc, out, _ = self.module.run_command(['pvs', '--noheadings', '-o', 'vg_name', self.device])
             if rc == 0 and not out.strip():
                 self.module.run_command(['pvremove', '--force', self.device], check_rc=True)
@@ -357,7 +352,6 @@ def main():
     change_msgs = []
     would_change_msgs = []
 
-    # Ensure VG
     vg_changed = False
     if module.check_mode:
         if not state['vg_exists']:
@@ -369,7 +363,6 @@ def main():
             change_msgs.append("created VG")
     changed |= vg_changed
 
-    # Ensure LV
     lv_created = False
     if not state['lv_exists']:
         if module.check_mode:
@@ -380,7 +373,6 @@ def main():
         lv_created = True
         changed = True
 
-    # Resize LV if needed
     if state['lv_exists']:
         try:
             requested_bytes = size_to_bytes(manager.size)
@@ -395,7 +387,6 @@ def main():
         except ValueError as e:
             module.fail_json(msg=f"Size comparison failed: {str(e)}")
 
-    # Create filesystem if needed
     fs_created = False
     current_fstype = state['fs_type']
     if lv_created or not current_fstype:
@@ -408,7 +399,6 @@ def main():
         current_fstype = manager.fstype
         changed = True
 
-    # Update fstab if needed
     fstab_changed = False
     if state['lv_exists'] or lv_created:
         has_correct, previous_lines, _ = manager.check_fstab_entry()
@@ -425,7 +415,6 @@ def main():
             fstab_changed = True
             changed = True
 
-    # Sync data if needed
     sync_changed = False
     default_excludes_map = {
         '/var': ['log/*', 'tmp/*'],
@@ -443,13 +432,10 @@ def main():
                 change_msgs.append(sync_msg)
         changed |= sync_changed
 
-    # Determine if reboot is required
     reboot_required = vg_changed or lv_created or fs_created or fstab_changed or sync_changed
 
     if module.check_mode:
-        # In check mode, changed is True if any would_change
         changed = len(would_change_msgs) > 0
-        # Reboot required unless only resize
         if changed:
             reboot_required = not (len(would_change_msgs) == 1 and "would resize LV and filesystem" in would_change_msgs)
         msg = "; ".join(change_msgs + would_change_msgs) if changed else "No changes needed"
@@ -460,7 +446,6 @@ def main():
             reboot_required=reboot_required
         )
 
-    # Refresh state after changes
     new_state = manager.validate_current_state()
 
     module.exit_json(

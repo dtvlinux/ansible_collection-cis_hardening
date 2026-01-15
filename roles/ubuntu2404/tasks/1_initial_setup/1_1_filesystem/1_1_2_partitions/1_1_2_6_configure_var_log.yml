@@ -1,0 +1,88 @@
+---
+- name: 1.1.2.6.1 | Ensure /var/log is a separate partition
+  dtvlinux.cis_hardening.dedicated_disk_partition:
+    path: /var/log
+    device: "{{ cis_ubuntu2404_dedicated_disk_device }}"
+    vg: "{{ cis_ubuntu2404_dedicated_disk_vgname }}"
+    lv: "{{ cis_ubuntu2404_dedicated_disk_var_log_lvol }}"
+    size: "{{ cis_ubuntu2404_dedicated_disk_var_log_size }}"
+    fstype: "{{ cis_ubuntu2404_dedicated_disk_var_log_type }}"
+    sync: true
+  register: var_log_partition_result
+  notify: dtvlinux.cis_hardening.reboot
+  tags:
+    - cis_ubuntu2404_rule_1_1_2_6_1
+    - cis_ubuntu2404_level_2_server
+    - cis_ubuntu2404_level_2_workstation
+    - cis_ubuntu2404_control_8_3
+    - cis_ubuntu2404_ig_1
+    - cis_ubuntu2404_ig_2
+    - cis_ubuntu2404_ig_3
+
+- name: 1.1.2.6.x | Configure /var/log | Task block
+  when:
+    - var_log_partition_result is defined
+    - var_log_partition_result is success
+  tags:
+    - cis_ubuntu2404_level_1_server
+    - cis_ubuntu2404_level_1_workstation
+    - cis_ubuntu2404_control_3_3
+    - cis_ubuntu2404_ig_1
+    - cis_ubuntu2404_ig_2
+    - cis_ubuntu2404_ig_3
+  block:
+    - name: 1.1.2.6.2 | Ensure nodev option set on /var/log partition
+      when: cis_ubuntu2404_var_log_nodev_apply | bool
+      vars:
+        current_opts: "{{ ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options('/var/log') }}"
+      ansible.posix.mount:
+        path: /var/log
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_var_log_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_var_log_type }}"
+        opts: "{{ (current_opts.split(',') + ['nodev']) | unique | join(',') }}"
+        state: present
+        backup: yes
+      register: var_log_fstab_nodev
+      notify: Remount /var/log
+      tags: cis_ubuntu2404_rule_1_1_2_6_2
+
+    - name: 1.1.2.6.3 | Ensure nosuid option set on /var/log partition
+      when: cis_ubuntu2404_var_log_nosuid_apply | bool
+      vars:
+        current_opts: >-
+          {{
+            ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options(
+              '/var/log', [var_log_fstab_nodev | default(omit)] | reject('sameas', omit) | list
+            )
+          }}
+      ansible.posix.mount:
+        path: /var/log
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_var_log_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_var_log_type }}"
+        opts: "{{ (current_opts.split(',') + ['nosuid']) | unique | join(',') }}"
+        state: present
+      register: var_log_fstab_nosuid
+      notify: Remount /var/log
+      tags: cis_ubuntu2404_rule_1_1_2_6_3
+
+    - name: 1.1.2.6.4 | Ensure noexec option set on /var/log partition
+      when: cis_ubuntu2404_var_log_noexec_apply | bool
+      vars:
+        current_opts: >-
+          {{
+            ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options(
+              '/var/log',
+              [
+                var_log_fstab_nodev | default(omit),
+                var_log_fstab_nosuid | default(omit)
+              ] | reject('sameas', omit) | list
+            )
+          }}
+      ansible.posix.mount:
+        path: /var/log
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_var_log_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_var_log_type }}"
+        opts: "{{ (current_opts.split(',') + ['noexec']) | unique | join(',') }}"
+        state: present
+      notify: Remount /var/log
+      tags: cis_ubuntu2404_rule_1_1_2_6_4

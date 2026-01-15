@@ -1,0 +1,55 @@
+ancestor: null
+releases:
+  0.1.1:
+    changes:
+      major_changes:
+      - Initial deployment covering CIS Ubuntu 24.04 benchmarking topic 1.1 Filesystem.
+      release_summary: Initial deployment covering CIS Ubuntu 24.04 benchmarking topic
+        1.1 Filesystem.
+    modules:
+    - description: Disable filesystem kernel modules.
+      name: disable_modules
+      namespace: ''
+    - description: Synchronize filesystem data to a new device or partition.
+      name: filesystem_sync
+      namespace: ''
+    release_date: '2026-01-05'
+  0.2.0:
+    changes:
+      major_changes:
+      - Code refactoring, better directory layout and file names.
+      - Filesystem sync module replaced with a module that does all but ensure nodev,
+        nosuid & noexec are present.
+      - Reboot handler now using a listener and results checks to ensure rebooting
+        only when required.
+      - Two new filters (current_mount_options and dedicated_disk_size) created to
+        save on repetition or multiple tasks.
+      - Will now resize lvm online.
+      release_summary: Code refactor to simplify and improve readability of tasks.
+    modules:
+    - description: Manage LVM partitions and migrate filesystem data.
+      name: dedicated_disk_partition
+      namespace: ''
+    - description: Disable filesystem kernel modules.
+      name: disable_modules
+      namespace: ''
+    plugins:
+      filter:
+      - description: Get current mount options from facts or task results.
+        name: current_mount_options
+        namespace: null
+      - description: Get the size of a specific disk from ansible_devices.
+        name: dedicated_disk_size
+        namespace: null
+    release_date: '2026-01-14'
+  0.2.1:
+    changes:
+      minor_changes:
+      - Accommodate check mode better.
+      - Add tagging to 1.1.2 tasks.
+      - Remount handlers no longer run after reboot.
+      - Updated when clause logics to ensure tagged tasks run only when prerequisite
+        task output defined.
+      release_summary: Added tagging and amended when clause logic for section 1.1.
+        Filesystem section.
+    release_date: '2026-01-15'

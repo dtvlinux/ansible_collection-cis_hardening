@@ -1,0 +1,37 @@
+objects:
+  role: {}
+plugins:
+  become: {}
+  cache: {}
+  callback: {}
+  cliconf: {}
+  connection: {}
+  filter:
+    current_mount_options:
+      description: Get current mount options from facts or task results
+      name: current_mount_options
+      version_added: null
+    dedicated_disk_size:
+      description: Get the size of a specific disk from ansible_devices
+      name: dedicated_disk_size
+      version_added: null
+  httpapi: {}
+  inventory: {}
+  lookup: {}
+  module:
+    dedicated_disk_partition:
+      description: Manage LVM partitions and migrate filesystem data
+      name: dedicated_disk_partition
+      namespace: ''
+      version_added: 2.0.0
+    disable_modules:
+      description: Disable filesystem kernel modules
+      name: disable_modules
+      namespace: ''
+      version_added: 1.0.0
+  netconf: {}
+  shell: {}
+  strategy: {}
+  test: {}
+  vars: {}
+version: 0.2.1

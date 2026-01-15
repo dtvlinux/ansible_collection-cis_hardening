@@ -1,0 +1,65 @@
+---
+- name: 1.1.2.3.1 | Ensure /home is a separate partition
+  dtvlinux.cis_hardening.dedicated_disk_partition:
+    path: /home
+    device: "{{ cis_ubuntu2404_dedicated_disk_device }}"
+    vg: "{{ cis_ubuntu2404_dedicated_disk_vgname }}"
+    lv: "{{ cis_ubuntu2404_dedicated_disk_home_lvol }}"
+    size: "{{ cis_ubuntu2404_dedicated_disk_home_size }}"
+    fstype: "{{ cis_ubuntu2404_dedicated_disk_home_type }}"
+    sync: true
+  register: home_partition_result
+  notify: dtvlinux.cis_hardening.reboot
+  tags:
+    - cis_ubuntu2404_rule_1_1_2_3_1
+    - cis_ubuntu2404_level_2_server
+    - cis_ubuntu2404_level_2_workstation
+    - cis_ubuntu2404_control_3_3
+    - cis_ubuntu2404_ig_1
+    - cis_ubuntu2404_ig_2
+    - cis_ubuntu2404_ig_3
+
+- name: 1.1.2.3.x | Configure /home | Task block
+  when:
+    - home_partition_result is defined
+    - home_partition_result is success
+  tags:
+    - cis_ubuntu2404_level_1_server
+    - cis_ubuntu2404_level_1_workstation
+    - cis_ubuntu2404_control_3_3
+    - cis_ubuntu2404_ig_1
+    - cis_ubuntu2404_ig_2
+    - cis_ubuntu2404_ig_3
+  block:
+    - name: 1.1.2.3.2 | Ensure nodev option set on /home partition
+      when: cis_ubuntu2404_home_nodev_apply | bool
+      vars:
+        current_opts: "{{ ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options('/home') }}"
+      ansible.posix.mount:
+        path: /home
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_home_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_home_type }}"
+        opts: "{{ (current_opts.split(',') + ['nodev']) | unique | join(',') }}"
+        state: present
+        backup: yes
+      register: home_fstab_nodev
+      notify: Remount /home
+      tags: cis_ubuntu2404_rule_1_1_2_3_2
+
+    - name: 1.1.2.3.3 | Ensure nosuid option set on /home partition
+      when: cis_ubuntu2404_home_nosuid_apply | bool
+      vars:
+        current_opts: >-
+          {{
+            ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options(
+              '/home', [home_fstab_nodev | default(omit)] | reject('sameas', omit) | list
+            )
+          }}
+      ansible.posix.mount:
+        path: /home
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_home_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_home_type }}"
+        opts: "{{ (current_opts.split(',') + ['nosuid']) | unique | join(',') }}"
+        state: present
+      notify: Remount /home
+      tags: cis_ubuntu2404_rule_1_1_2_3_3

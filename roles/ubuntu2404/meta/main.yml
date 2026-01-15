@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  author: dtvlinux
+  description: System hardening tasks for security
+  license: GNU General Public License v3.0 or later
+  min_ansible_version: "2.16.0"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - noble # 24.04
+dependencies: []

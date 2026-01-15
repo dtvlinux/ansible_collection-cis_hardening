@@ -1,0 +1,65 @@
+---
+- name: 1.1.2.4.1 | Ensure /var is a separate partition
+  dtvlinux.cis_hardening.dedicated_disk_partition:
+    path: /var
+    device: "{{ cis_ubuntu2404_dedicated_disk_device }}"
+    vg: "{{ cis_ubuntu2404_dedicated_disk_vgname }}"
+    lv: "{{ cis_ubuntu2404_dedicated_disk_var_lvol }}"
+    size: "{{ cis_ubuntu2404_dedicated_disk_var_size }}"
+    fstype: "{{ cis_ubuntu2404_dedicated_disk_var_type }}"
+    sync: true
+  register: var_partition_result
+  notify: dtvlinux.cis_hardening.reboot
+  tags:
+    - cis_ubuntu2404_rule_1_1_2_4_1
+    - cis_ubuntu2404_level_2_server
+    - cis_ubuntu2404_level_2_workstation
+    - cis_ubuntu2404_control_3_3
+    - cis_ubuntu2404_ig_1
+    - cis_ubuntu2404_ig_2
+    - cis_ubuntu2404_ig_3
+
+- name: 1.1.2.4.x | Configure /var | Task block
+  when:
+    - var_partition_result is defined
+    - var_partition_result is success
+  tags:
+    - cis_ubuntu2404_level_1_server
+    - cis_ubuntu2404_level_1_workstation
+    - cis_ubuntu2404_control_3_3
+    - cis_ubuntu2404_ig_1
+    - cis_ubuntu2404_ig_2
+    - cis_ubuntu2404_ig_3
+  block:
+    - name: 1.1.2.4.2 | Ensure nodev option set on /var partition
+      when: cis_ubuntu2404_var_nodev_apply | bool
+      vars:
+        current_opts: "{{ ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options('/var') }}"
+      ansible.posix.mount:
+        path: /var
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_var_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_var_type }}"
+        opts: "{{ (current_opts.split(',') + ['nodev']) | unique | join(',') }}"
+        state: present
+        backup: yes
+      register: var_fstab_nodev
+      notify: Remount /var
+      tags: cis_ubuntu2404_rule_1_1_2_4_2
+
+    - name: 1.1.2.4.3 | Ensure nosuid option set on /var partition
+      when: cis_ubuntu2404_var_nosuid_apply | bool
+      vars:
+        current_opts: >-
+          {{
+            ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options(
+              '/var', [var_fstab_nodev | default(omit)] | reject('sameas', omit) | list
+            )
+          }}
+      ansible.posix.mount:
+        path: /var
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_var_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_var_type }}"
+        opts: "{{ (current_opts.split(',') + ['nosuid']) | unique | join(',') }}"
+        state: present
+      notify: Remount /var
+      tags: cis_ubuntu2404_rule_1_1_2_4_3

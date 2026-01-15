@@ -1,0 +1,94 @@
+---
+- name: 1.1.2.1.1 | Ensure /tmp is a separate partition
+  dtvlinux.cis_hardening.dedicated_disk_partition:
+    path: /tmp
+    device: "{{ cis_ubuntu2404_dedicated_disk_device }}"
+    vg: "{{ cis_ubuntu2404_dedicated_disk_vgname }}"
+    lv: "{{ cis_ubuntu2404_dedicated_disk_tmp_lvol }}"
+    size: "{{ cis_ubuntu2404_dedicated_disk_tmp_size }}"
+    fstype: "{{ cis_ubuntu2404_dedicated_disk_tmp_type }}"
+    sync: false
+  register: tmp_partition_result
+  notify: dtvlinux.cis_hardening.reboot
+  tags:
+    - cis_ubuntu2404_rule_1_1_2_1_1
+    - cis_ubuntu2404_level_1_server
+    - cis_ubuntu2404_level_1_workstation
+    - cis_ubuntu2404_control_4_8
+    - cis_ubuntu2404_ig_2
+    - cis_ubuntu2404_ig_3
+
+- name: 1.1.2.1.x | Configure /tmp | Task block
+  when:
+    - tmp_partition_result is defined
+    - tmp_partition_result is success
+  tags:
+    - cis_ubuntu2404_level_1_server
+    - cis_ubuntu2404_level_1_workstation
+    - cis_ubuntu2404_ig_2
+    - cis_ubuntu2404_ig_3
+  block:
+    - name: 1.1.2.1.2 | Ensure nodev option set on /tmp partition
+      when: cis_ubuntu2404_tmp_nodev_apply | bool
+      vars:
+        current_opts: "{{ ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options('/tmp') }}"
+      ansible.posix.mount:
+        path: /tmp
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_tmp_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_tmp_type }}"
+        opts: "{{ (current_opts.split(',') + ['nodev']) | unique | join(',') }}"
+        state: present
+        backup: yes
+      register: tmp_fstab_nodev
+      notify: Remount /tmp
+      tags:
+        - cis_ubuntu2404_rule_1_1_2_1_2
+        - cis_ubuntu2404_control_4_8
+    
+    - name: 1.1.2.1.3 | Ensure nosuid option set on /tmp partition
+      when: cis_ubuntu2404_tmp_nosuid_apply | bool
+      vars:
+        current_opts: >-
+          {{
+            ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options(
+              '/tmp',
+              [tmp_fstab_nodev | default(omit)] | reject('sameas', omit) | list
+            )
+          }}
+      ansible.posix.mount:
+        path: /tmp
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_tmp_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_tmp_type }}"
+        opts: "{{ (current_opts.split(',') + ['nosuid']) | unique | join(',') }}"
+        state: present
+      register: tmp_fstab_nosuid
+      notify: Remount /tmp
+      tags:
+        - cis_ubuntu2404_rule_1_1_2_1_3
+        - cis_ubuntu2404_control_3_3
+        - cis_ubuntu2404_ig_1
+
+    - name: 1.1.2.1.4 | Ensure noexec option set on /tmp partition
+      when: cis_ubuntu2404_tmp_noexec_apply | bool
+      vars:
+        current_opts: >-
+          {{
+            ansible_facts['mounts'] | dtvlinux.cis_hardening.current_mount_options(
+              '/tmp',
+              [
+                tmp_fstab_nodev | default(omit),
+                tmp_fstab_nosuid | default(omit)
+              ] | reject('sameas', omit) | list
+            )
+          }}
+      ansible.posix.mount:
+        path: /tmp
+        src: "/dev/{{ cis_ubuntu2404_dedicated_disk_vgname }}/{{ cis_ubuntu2404_dedicated_disk_tmp_lvol }}"
+        fstype: "{{ cis_ubuntu2404_dedicated_disk_tmp_type }}"
+        opts: "{{ (current_opts.split(',') + ['noexec']) | unique | join(',') }}"
+        state: present
+      notify: Remount /tmp
+      tags:
+        - cis_ubuntu2404_rule_1_1_2_1_4
+        - cis_ubuntu2404_control_3_3
+        - cis_ubuntu2404_ig_1

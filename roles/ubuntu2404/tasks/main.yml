@@ -1,0 +1,13 @@
+---
+- name: "Import tasks for role"
+  when: ansible_facts['distribution_release'] == 'noble'
+  tags: cis_ubuntu2404
+  block:
+    - name: Prepare system for CIS benchmarking tasks
+      ansible.builtin.import_tasks:
+        file: prepare_system.yml
+      tags: always
+
+    - name: 1 | Initial setup | Import tasks
+      ansible.builtin.import_tasks:
+        file: 1_initial_setup/main.yml

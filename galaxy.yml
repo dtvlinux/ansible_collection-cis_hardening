@@ -1,0 +1,14 @@
+---
+namespace: dtvlinux
+name: cis_hardening
+version: 0.2.1
+readme: README.md
+authors: [Michael Lucraft (x.com/dtvlinux)]
+description: Ansible collection covering CIS benchmarks
+license: [GPL-3.0-or-later]
+tags: [benchmark, cis, compliance, hardening, linux, os, security, ubuntu]
+dependencies: {}
+repository: https://github.com/dtvlinux/ansible_collection-cis_hardening.git
+documentation: https://github.com/dtvlinux/ansible_collection-cis_hardening.git/README.md
+homepage: https://dtvlinux.com/dtvlinux.cis_hardening/index.html
+issues: https://github.com/dtvlinux/ansible_collection-cis_hardening/issues

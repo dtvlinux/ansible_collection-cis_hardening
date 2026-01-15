@@ -1,0 +1,85 @@
+---
+- name: 1.1.2 | Configure filesystem partitions | Dedicated disk checks
+  when: cis_ubuntu2404_dedicated_disk_apply | bool
+  tags: always
+  block:
+    - name: 1.1.2 | Configure filesystem partitions | Resolve device real name
+      ansible.builtin.shell:
+        cmd: "basename $(readlink -f {{ cis_ubuntu2404_dedicated_disk_device }} || echo 'NOT_FOUND')"
+      register: resolved_device_name
+      changed_when: false
+      check_mode: false
+
+    - name: 1.1.2 | Configure filesystem partitions | Dedicated disk check
+      vars:
+        device_exists: "{{ resolved_device_name.stdout != 'NOT_FOUND' }}"
+        lvm_overhead_bytes: "{{ '32M' | ansible.builtin.human_to_bytes }}"
+        raw_size_bytes: >-
+          {{ (resolved_device_name.stdout if device_exists else '0') 
+             | dtvlinux.cis_hardening.dedicated_disk_size(ansible_facts['devices']) 
+             | ansible.builtin.human_to_bytes }}
+        usable_size_bytes: "{{ raw_size_bytes | float - lvm_overhead_bytes | float }}"
+      ansible.builtin.set_fact:
+        dedicated_disk_check:
+          passed: "{{ device_exists and (usable_size_bytes | float >= cis_ubuntu2404_required_bytes | float) }}"
+          device_found: "{{ device_exists }}"
+          available_bytes: "{{ usable_size_bytes }}"
+          msg: >-
+            {%- if not device_exists -%}
+            Device {{ cis_ubuntu2404_dedicated_disk_device }} not found.
+            {%- else -%}
+            Space Check: {{ 'Passed' if (usable_size_bytes | float >= cis_ubuntu2404_required_bytes | float) else 'Failed' }}.
+            Available: {{ usable_size_bytes | ansible.builtin.human_readable }},
+            required: {{ cis_ubuntu2404_required_bytes | ansible.builtin.human_readable }}
+            {%- endif -%}
+
+- name: 1.1.2.2 | Configure /dev/shm
+  when: cis_ubuntu2404_dev_shm_apply | bool
+  ansible.builtin.include_tasks:
+    file: 1_1_2_2_configure_dev_shm.yml
+  tags: always
+
+- name: 1.1.2 | Configure filesystem partitions
+  when: dedicated_disk_check.passed
+  block:
+    - name: 1.1.2.1 | Configure /tmp
+      when: cis_ubuntu2404_dedicated_disk_tmp_apply | bool
+      ansible.builtin.include_tasks:
+        file: 1_1_2_1_configure_tmp.yml
+      register: dedicated_tmp_result
+      tags: always
+
+    - name: 1.1.2.3 | Configure /home
+      when: cis_ubuntu2404_dedicated_disk_home_apply | bool
+      ansible.builtin.include_tasks:
+        file: 1_1_2_3_configure_home.yml
+      register: dedicated_home_result
+      tags: always
+    
+    - name: 1.1.2.4 | Configure /var
+      when: cis_ubuntu2404_dedicated_disk_var_apply | bool
+      ansible.builtin.include_tasks:
+        file: 1_1_2_4_configure_var.yml
+      register: dedicated_var_result
+      tags: always
+
+    - name: 1.1.2.5 | Configure /var/tmp
+      when: cis_ubuntu2404_dedicated_disk_var_tmp_apply | bool
+      ansible.builtin.include_tasks:
+        file: 1_1_2_5_configure_var_tmp.yml
+      register: dedicated_var_tmp_result
+      tags: always
+    
+    - name: 1.1.2.6 | Configure /var/log
+      when: cis_ubuntu2404_dedicated_disk_var_log_apply | bool
+      ansible.builtin.include_tasks:
+        file: 1_1_2_6_configure_var_log.yml
+      register: dedicated_var_log_result
+      tags: always
+    
+    - name: 1.1.2.7 | Configure /var/log/audit
+      when: cis_ubuntu2404_dedicated_disk_var_log_audit_apply | bool
+      ansible.builtin.include_tasks:
+        file: 1_1_2_7_configure_var_log_audit.yml
+      register: dedicated_var_log_audit_result
+      tags: always

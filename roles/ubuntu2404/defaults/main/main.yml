@@ -1,0 +1,208 @@
+---
+# Set default CIS profile
+cis_ubuntu2404_profile: level_1_server
+
+# Allow role to reboot system
+cis_ubuntu2404_reboot: true
+
+# Section 1 - Initial Setup
+# -------------------------
+
+## 1.1 - Filesystem
+## ----------------
+
+### 1.1.1 - Configure Filesystem Kernel Modules
+### -------------------------------------------
+
+#### 1.1.1.1 - Ensure cramfs kernel module is not available
+cis_ubuntu2404_cramfs_apply: true
+cis_ubuntu2404_cramfs_conf: /etc/modprobe.d/cis_cramfs.conf
+
+#### 1.1.1.2 - Ensure freevxfs kernel module is not available
+cis_ubuntu2404_freevxfs_apply: true
+cis_ubuntu2404_freevxfs_conf: /etc/modprobe.d/cis_freevxfs.conf
+
+#### 1.1.1.3 - Ensure hfs kernel module is not available
+cis_ubuntu2404_hfs_apply: true
+cis_ubuntu2404_hfs_conf: /etc/modprobe.d/cis_hfs.conf
+
+#### 1.1.1.4 - Ensure hfsplus kernel module is not available
+cis_ubuntu2404_hfsplus_apply: true
+cis_ubuntu2404_hfsplus_conf: /etc/modprobe.d/cis_hfsplus.conf
+
+#### 1.1.1.5 - Ensure jffs2 kernel module is not available
+cis_ubuntu2404_jffs2_apply: true
+cis_ubuntu2404_jffs2_conf: /etc/modprobe.d/cis_jffs2.conf
+
+#### 1.1.1.6 - Ensure overlayfs kernel module is not available
+cis_ubuntu2404_overlayfs_apply: "{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}"
+cis_ubuntu2404_overlayfs_conf: /etc/modprobe.d/cis_overlayfs.conf
+
+#### 1.1.1.7 - Ensure squashfs kernel module is not available
+cis_ubuntu2404_squashfs_apply: "{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}"
+cis_ubuntu2404_squashfs_conf: /etc/modprobe.d/cis_squashfs.conf
+
+#### 1.1.1.8 - Ensure udf kernel module is not available
+cis_ubuntu2404_udf_apply: "{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}"
+cis_ubuntu2404_udf_conf: /etc/modprobe.d/cis_udf.conf
+
+#### 1.1.1.9 - Ensure usb-storage kernel module is not available
+cis_ubuntu2404_usb_storage_apply: "{{ true if cis_ubuntu2404_profile != 'level_1_workstation' else false }}"
+cis_ubuntu2404_usb_storage_conf: /etc/modprobe.d/cis_usb_storage.conf
+
+#### 1.1.1.10 - Ensure unused filesystems kernel modules are not available
+cis_ubuntu2404_unused_filesystems_apply: false
+cis_ubuntu2404_unused_filesystems_conf: /etc/modprobe.d/cis_unused_filesystems.conf
+cis_ubuntu2404_unused_filesystems_afs: false
+cis_ubuntu2404_unused_filesystems_ceph: false
+cis_ubuntu2404_unused_filesystems_exfat: false
+cis_ubuntu2404_unused_filesystems_ext: false
+cis_ubuntu2404_unused_filesystems_fat: false
+cis_ubuntu2404_unused_filesystems_fscache: false
+cis_ubuntu2404_unused_filesystems_fuse: false
+cis_ubuntu2404_unused_filesystems_gfs2: false
+cis_ubuntu2404_unused_filesystems_nfs_common: false
+cis_ubuntu2404_unused_filesystems_nfsd: false
+cis_ubuntu2404_unused_filesystems_smbfs_common: false
+
+### Section 1.1.2 - WARNING
+### ----------------------------------------------------------------------------
+### Partitioning is a critical system architecture task that ensures resource 
+### isolation and security compliance. While partitioning is ideally performed 
+### during initial OS deployment, this role facilitates post-deployment 
+### alignment by utilizing Logical Volume Management (LVM) on a dedicated 
+### block device when cis_ubuntu2404_dedicated_disk_apply = 'true'.
+### When set to false, the only mount that is still managed is /dev/shm as nodev
+### dedicated disk is required for this.
+###
+### When using the dedicated disk option, data on the existing mount point will
+### be copied into this role's LVM management framework. The declared size is for
+### initial LV creation only. If you have existing partitions outside of this VG
+### that you wish to maintain manually, set 'apply' to false for those partitions.
+###
+### Ensure verified backups are available and execute disk changes during
+### authorized maintenance windows. When a VG, LV, filesystem or fstab entry is
+### created, a ** REBOOT ** will occur. LVM resizing is performed online.
+### ----------------------------------------------------------------------------
+
+### 1.1.2 - Configure Filesystem Partitions - Dedicated disk method
+cis_ubuntu2404_dedicated_disk_apply: true
+
+### Disk device examples:
+# Azure example where disk as per Portal is set to Lun0
+# cis_ubuntu2404_dedicated_disk_device: /dev/disk/azure/scsi1/lun0
+
+# QEMU/KVM example where disks XML shows: <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
+# cis_ubuntu2404_dedicated_disk_device: /dev/disk/by-path/virtio-pci-0000:04:00.0
+
+cis_ubuntu2404_dedicated_disk_vgname: vg_hardening
+
+#### 1.1.2.1 - Configure /tmp
+
+##### 1.1.2.1.1 - Ensure /tmp is a separate partition
+cis_ubuntu2404_dedicated_disk_tmp_apply: true
+cis_ubuntu2404_dedicated_disk_tmp_lvol: lv_tmp
+cis_ubuntu2404_dedicated_disk_tmp_type: ext4
+cis_ubuntu2404_dedicated_disk_tmp_size: 4G
+
+##### 1.1.2.1.2 - Ensure nodev option set on /tmp partition
+cis_ubuntu2404_tmp_nodev_apply: true
+
+##### 1.1.2.1.3 - Ensure nosuid option set on /tmp partition
+cis_ubuntu2404_tmp_nosuid_apply: true
+
+##### 1.1.2.1.4 - Ensure noexec option set on /tmp partition
+cis_ubuntu2404_tmp_noexec_apply: true
+
+#### 1.1.2.2 - Configure /dev/shm
+
+##### 1.1.2.2.1 - Ensure /dev/shm is a separate partition
+cis_ubuntu2404_dev_shm_apply: true
+
+##### 1.1.2.1.2 - Ensure nodev option set on /dev/shm partition
+cis_ubuntu2404_dev_shm_nodev_apply: true
+
+##### 1.1.2.1.3 - Ensure nosuid option set on /dev/shm partition
+cis_ubuntu2404_dev_shm_nosuid_apply: true
+
+##### 1.1.2.1.4 - Ensure noexec option set on /dev/shm partition
+cis_ubuntu2404_dev_shm_noexec_apply: true
+
+#### 1.1.2.3 - Configure /home
+
+##### 1.1.2.3.1 - Ensure /home is a separate partition
+cis_ubuntu2404_dedicated_disk_home_apply: "{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}"
+cis_ubuntu2404_dedicated_disk_home_lvol: lv_home
+cis_ubuntu2404_dedicated_disk_home_type: ext4
+cis_ubuntu2404_dedicated_disk_home_size: 2G
+
+##### 1.1.2.3.2 - Ensure nodev option set on /home partition
+cis_ubuntu2404_home_nodev_apply: true
+
+##### 1.1.2.3.3 - Ensure nosuid option set on /home partition
+cis_ubuntu2404_home_nosuid_apply: true
+
+#### 1.1.2.4 - Configure /var
+
+##### 1.1.2.4.1 - Ensure /var is a separate partition
+cis_ubuntu2404_dedicated_disk_var_apply: "{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}"
+cis_ubuntu2404_dedicated_disk_var_lvol: lv_var
+cis_ubuntu2404_dedicated_disk_var_type: ext4
+cis_ubuntu2404_dedicated_disk_var_size: 8G
+
+##### 1.1.2.4.2 - Ensure nodev option set on /var partition
+cis_ubuntu2404_var_nodev_apply: true
+
+##### 1.1.2.4.3 - Ensure nosuid option set on /var partition
+cis_ubuntu2404_var_nosuid_apply: true
+
+#### 1.1.2.5 - Configure /var/tmp
+
+##### 1.1.2.5.1 - Ensure /var/tmp is a separate partition
+cis_ubuntu2404_dedicated_disk_var_tmp_apply: "{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}"
+cis_ubuntu2404_dedicated_disk_var_tmp_lvol: lv_var_tmp
+cis_ubuntu2404_dedicated_disk_var_tmp_type: ext4
+cis_ubuntu2404_dedicated_disk_var_tmp_size: 2G
+
+##### 1.1.2.5.2 - Ensure nodev option set on /var/tmp partition
+cis_ubuntu2404_var_tmp_nodev_apply: true
+
+##### 1.1.2.5.3 - Ensure nosuid option set on /var/tmp partition
+cis_ubuntu2404_var_tmp_nosuid_apply: true
+
+##### 1.1.2.5.4 - Ensure noexec option set on /var/tmp partition
+cis_ubuntu2404_var_tmp_noexec_apply: true
+
+#### 1.1.2.6 - Configure /var/log
+
+##### 1.1.2.6.1 - Ensure /var/log is a separate partition
+cis_ubuntu2404_dedicated_disk_var_log_apply: "{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}"
+cis_ubuntu2404_dedicated_disk_var_log_lvol: lv_var_log
+cis_ubuntu2404_dedicated_disk_var_log_type: ext4
+cis_ubuntu2404_dedicated_disk_var_log_size: 4G
+
+##### 1.1.2.6.2 - Ensure nodev option set on /var/log partition
+cis_ubuntu2404_var_log_nodev_apply: true
+
+##### 1.1.2.6.3 - Ensure nosuid option set on /var/log partition
+cis_ubuntu2404_var_log_nosuid_apply: true
+
+##### 1.1.2.6.4 - Ensure noexec option set on /var/log partition
+cis_ubuntu2404_var_log_noexec_apply: true
+
+#### 1.1.2.7 - Configure /var/log/audit
+
+##### 1.1.2.7.1 - Ensure /var/log/audit is a separate partition
+cis_ubuntu2404_dedicated_disk_var_log_audit_apply: "{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}"
+cis_ubuntu2404_dedicated_disk_var_log_audit_lvol: lv_var_log_audit
+cis_ubuntu2404_dedicated_disk_var_log_audit_type: ext4
+cis_ubuntu2404_dedicated_disk_var_log_audit_size: 4G
+
+##### 1.1.2.7.2 - Ensure nodev option set on /var/log/audit partition
+cis_ubuntu2404_var_log_audit_nodev_apply: true
+
+##### 1.1.2.7.3 - Ensure nosuid option set on /var/log/audit partition
+cis_ubuntu2404_var_log_audit_nosuid_apply: true
+
+##### 1.1.2.7.4 - Ensure noexec option set on /var/log/audit partition
+cis_ubuntu2404_var_log_audit_noexec_apply: true

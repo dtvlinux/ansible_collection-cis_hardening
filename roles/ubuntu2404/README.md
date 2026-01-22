@@ -254,7 +254,7 @@ Description: System hardening tasks for security
 
 | Name | Module | Has Conditions | Tags |
 | ---- | ------ | -------------- | -----|
-| 1.2.1.1 ¦ Ensure GPG keys are configured ¦ Manual Actions Report | dtvlinux.cis_hardening.check_gpg_keys | False |  |
+| 1.2.1.1 ¦ Ensure GPG keys are configured ¦ Manual Actions Report | dtvlinux.cis_hardening.check_gpg_keys | True |  |
 
 #### File: tasks/1_initial_setup/1_2_package_management/main.yml
 

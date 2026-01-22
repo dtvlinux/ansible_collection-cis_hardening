@@ -1,7 +1,7 @@
 ---
 - name: 1.2.1.1 | Ensure GPG keys are configured | Manual Actions Report
+  when: cis_ubuntu2404_gpg_key_check_report
   dtvlinux.cis_hardening.check_gpg_keys:
-    update_manual_actions: "{{ cis_ubuntu2404_gpg_key_check_report }}"
     current_manual_actions: "{{ cis_manual_actions | default([]) }}"
   changed_when: false
   tags:

@@ -11,7 +11,7 @@ cis_ubuntu2404_unused_filesystems_module_list: >-
   {%- endfor -%}
   {{ module_list }}
 
-# 1.1.2 - Configure filesystem partitions - 
+# 1.1.2 - Used for size calculations
 cis_ubuntu2404_partitions:
   - { apply: "{{ cis_ubuntu2404_dedicated_disk_tmp_apply }}", size: "{{ cis_ubuntu2404_dedicated_disk_tmp_size }}" }
   - { apply: "{{ cis_ubuntu2404_dedicated_disk_home_apply }}", size: "{{ cis_ubuntu2404_dedicated_disk_home_size }}" }

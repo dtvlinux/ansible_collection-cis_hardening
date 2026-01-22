@@ -19,6 +19,12 @@ plugins:
   inventory: {}
   lookup: {}
   module:
+    check_gpg_keys:
+      description: Gather GPG key information from APT trusted directories for CIS
+        auditing
+      name: check_gpg_keys
+      namespace: ''
+      version_added: 1.0.0
     dedicated_disk_partition:
       description: Manage LVM partitions and migrate filesystem data
       name: dedicated_disk_partition
@@ -34,4 +40,4 @@ plugins:
   strategy: {}
   test: {}
   vars: {}
-version: 0.2.1
+version: 0.3.0

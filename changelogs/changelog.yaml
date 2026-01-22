@@ -53,3 +53,21 @@ releases:
       release_summary: Added tagging and amended when clause logic for section 1.1.
         Filesystem section.
     release_date: '2026-01-15'
+  0.3.0:
+    changes:
+      major_changes:
+      - Added debug task to report on CIS rules that require manual actions
+      - Added task for CIS rule 1.2.1.1 (ensure GPG keys are configured)
+      minor_changes:
+      - Moved unattended-upgrades service stop task to handlers so it only stops for
+        reboots. Service no longer set to disabled.
+      release_summary: This release now covers CIS rule 1.2.1.1 (ensure GPG keys are
+        configured)
+    fragments:
+    - 0.3.0.yaml
+    modules:
+    - description: Gather GPG key information from APT trusted directories for CIS
+        auditing
+      name: check_gpg_keys
+      namespace: ''
+    release_date: '2026-01-22'

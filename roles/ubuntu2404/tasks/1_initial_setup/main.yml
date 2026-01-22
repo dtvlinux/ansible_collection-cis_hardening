@@ -1,4 +1,8 @@
 ---
-- name: 1.1.1 | Configure filesystem kernel modules | Import tasks
+- name: 1.1 | Filesystem | Import tasks
   ansible.builtin.import_tasks:
     file: 1_1_filesystem/main.yml
+
+- name: 1.2 | Package management | Import tasks
+  ansible.builtin.import_tasks:
+    file: 1_2_package_management/main.yml

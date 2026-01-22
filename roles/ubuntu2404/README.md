@@ -23,90 +23,90 @@ Description: System hardening tasks for security
 
 **These are static variables with lower priority**
 
-#### File: defaults/main/main.yml
+#### File: defaults/main.yml
 
 | Var          | Type         | Value       |
 |--------------|--------------|-------------|
-| [cis_ubuntu2404_profile](defaults/main/main.yml#L3)   | str | `level_1_server` |    
-| [cis_ubuntu2404_reboot](defaults/main/main.yml#L6)   | bool | `True` |    
-| [cis_ubuntu2404_cramfs_apply](defaults/main/main.yml#L18)   | bool | `True` |    
-| [cis_ubuntu2404_cramfs_conf](defaults/main/main.yml#L19)   | str | `/etc/modprobe.d/cis_cramfs.conf` |    
-| [cis_ubuntu2404_freevxfs_apply](defaults/main/main.yml#L22)   | bool | `True` |    
-| [cis_ubuntu2404_freevxfs_conf](defaults/main/main.yml#L23)   | str | `/etc/modprobe.d/cis_freevxfs.conf` |    
-| [cis_ubuntu2404_hfs_apply](defaults/main/main.yml#L26)   | bool | `True` |    
-| [cis_ubuntu2404_hfs_conf](defaults/main/main.yml#L27)   | str | `/etc/modprobe.d/cis_hfs.conf` |    
-| [cis_ubuntu2404_hfsplus_apply](defaults/main/main.yml#L30)   | bool | `True` |    
-| [cis_ubuntu2404_hfsplus_conf](defaults/main/main.yml#L31)   | str | `/etc/modprobe.d/cis_hfsplus.conf` |    
-| [cis_ubuntu2404_jffs2_apply](defaults/main/main.yml#L34)   | bool | `True` |    
-| [cis_ubuntu2404_jffs2_conf](defaults/main/main.yml#L35)   | str | `/etc/modprobe.d/cis_jffs2.conf` |    
-| [cis_ubuntu2404_overlayfs_apply](defaults/main/main.yml#L38)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
-| [cis_ubuntu2404_overlayfs_conf](defaults/main/main.yml#L39)   | str | `/etc/modprobe.d/cis_overlayfs.conf` |    
-| [cis_ubuntu2404_squashfs_apply](defaults/main/main.yml#L42)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
-| [cis_ubuntu2404_squashfs_conf](defaults/main/main.yml#L43)   | str | `/etc/modprobe.d/cis_squashfs.conf` |    
-| [cis_ubuntu2404_udf_apply](defaults/main/main.yml#L46)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
-| [cis_ubuntu2404_udf_conf](defaults/main/main.yml#L47)   | str | `/etc/modprobe.d/cis_udf.conf` |    
-| [cis_ubuntu2404_usb_storage_apply](defaults/main/main.yml#L50)   | str | `{{ true if cis_ubuntu2404_profile != 'level_1_workstation' else false }}` |    
-| [cis_ubuntu2404_usb_storage_conf](defaults/main/main.yml#L51)   | str | `/etc/modprobe.d/cis_usb_storage.conf` |    
-| [cis_ubuntu2404_unused_filesystems_apply](defaults/main/main.yml#L54)   | bool | `False` |    
-| [cis_ubuntu2404_unused_filesystems_conf](defaults/main/main.yml#L55)   | str | `/etc/modprobe.d/cis_unused_filesystems.conf` |    
-| [cis_ubuntu2404_unused_filesystems_afs](defaults/main/main.yml#L56)   | bool | `False` |    
-| [cis_ubuntu2404_unused_filesystems_ceph](defaults/main/main.yml#L57)   | bool | `False` |    
-| [cis_ubuntu2404_unused_filesystems_exfat](defaults/main/main.yml#L58)   | bool | `False` |    
-| [cis_ubuntu2404_unused_filesystems_ext](defaults/main/main.yml#L59)   | bool | `False` |    
-| [cis_ubuntu2404_unused_filesystems_fat](defaults/main/main.yml#L60)   | bool | `False` |    
-| [cis_ubuntu2404_unused_filesystems_fscache](defaults/main/main.yml#L61)   | bool | `False` |    
-| [cis_ubuntu2404_unused_filesystems_fuse](defaults/main/main.yml#L62)   | bool | `False` |    
-| [cis_ubuntu2404_unused_filesystems_gfs2](defaults/main/main.yml#L63)   | bool | `False` |    
-| [cis_ubuntu2404_unused_filesystems_nfs_common](defaults/main/main.yml#L64)   | bool | `False` |    
-| [cis_ubuntu2404_unused_filesystems_nfsd](defaults/main/main.yml#L65)   | bool | `False` |    
-| [cis_ubuntu2404_unused_filesystems_smbfs_common](defaults/main/main.yml#L66)   | bool | `False` |    
-| [cis_ubuntu2404_dedicated_disk_apply](defaults/main/main.yml#L89)   | bool | `True` |    
-| [cis_ubuntu2404_dedicated_disk_vgname](defaults/main/main.yml#L98)   | str | `vg_hardening` |    
-| [cis_ubuntu2404_dedicated_disk_tmp_apply](defaults/main/main.yml#L103)   | bool | `True` |    
-| [cis_ubuntu2404_dedicated_disk_tmp_lvol](defaults/main/main.yml#L104)   | str | `lv_tmp` |    
-| [cis_ubuntu2404_dedicated_disk_tmp_type](defaults/main/main.yml#L105)   | str | `ext4` |    
-| [cis_ubuntu2404_dedicated_disk_tmp_size](defaults/main/main.yml#L106)   | str | `4G` |    
-| [cis_ubuntu2404_tmp_nodev_apply](defaults/main/main.yml#L109)   | bool | `True` |    
-| [cis_ubuntu2404_tmp_nosuid_apply](defaults/main/main.yml#L112)   | bool | `True` |    
-| [cis_ubuntu2404_tmp_noexec_apply](defaults/main/main.yml#L115)   | bool | `True` |    
-| [cis_ubuntu2404_dev_shm_apply](defaults/main/main.yml#L120)   | bool | `True` |    
-| [cis_ubuntu2404_dev_shm_nodev_apply](defaults/main/main.yml#L123)   | bool | `True` |    
-| [cis_ubuntu2404_dev_shm_nosuid_apply](defaults/main/main.yml#L126)   | bool | `True` |    
-| [cis_ubuntu2404_dev_shm_noexec_apply](defaults/main/main.yml#L129)   | bool | `True` |    
-| [cis_ubuntu2404_dedicated_disk_home_apply](defaults/main/main.yml#L134)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
-| [cis_ubuntu2404_dedicated_disk_home_lvol](defaults/main/main.yml#L135)   | str | `lv_home` |    
-| [cis_ubuntu2404_dedicated_disk_home_type](defaults/main/main.yml#L136)   | str | `ext4` |    
-| [cis_ubuntu2404_dedicated_disk_home_size](defaults/main/main.yml#L137)   | str | `2G` |    
-| [cis_ubuntu2404_home_nodev_apply](defaults/main/main.yml#L140)   | bool | `True` |    
-| [cis_ubuntu2404_home_nosuid_apply](defaults/main/main.yml#L143)   | bool | `True` |    
-| [cis_ubuntu2404_dedicated_disk_var_apply](defaults/main/main.yml#L148)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
-| [cis_ubuntu2404_dedicated_disk_var_lvol](defaults/main/main.yml#L149)   | str | `lv_var` |    
-| [cis_ubuntu2404_dedicated_disk_var_type](defaults/main/main.yml#L150)   | str | `ext4` |    
-| [cis_ubuntu2404_dedicated_disk_var_size](defaults/main/main.yml#L151)   | str | `8G` |    
-| [cis_ubuntu2404_var_nodev_apply](defaults/main/main.yml#L154)   | bool | `True` |    
-| [cis_ubuntu2404_var_nosuid_apply](defaults/main/main.yml#L157)   | bool | `True` |    
-| [cis_ubuntu2404_dedicated_disk_var_tmp_apply](defaults/main/main.yml#L162)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
-| [cis_ubuntu2404_dedicated_disk_var_tmp_lvol](defaults/main/main.yml#L163)   | str | `lv_var_tmp` |    
-| [cis_ubuntu2404_dedicated_disk_var_tmp_type](defaults/main/main.yml#L164)   | str | `ext4` |    
-| [cis_ubuntu2404_dedicated_disk_var_tmp_size](defaults/main/main.yml#L165)   | str | `2G` |    
-| [cis_ubuntu2404_var_tmp_nodev_apply](defaults/main/main.yml#L168)   | bool | `True` |    
-| [cis_ubuntu2404_var_tmp_nosuid_apply](defaults/main/main.yml#L171)   | bool | `True` |    
-| [cis_ubuntu2404_var_tmp_noexec_apply](defaults/main/main.yml#L174)   | bool | `True` |    
-| [cis_ubuntu2404_dedicated_disk_var_log_apply](defaults/main/main.yml#L179)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
-| [cis_ubuntu2404_dedicated_disk_var_log_lvol](defaults/main/main.yml#L180)   | str | `lv_var_log` |    
-| [cis_ubuntu2404_dedicated_disk_var_log_type](defaults/main/main.yml#L181)   | str | `ext4` |    
-| [cis_ubuntu2404_dedicated_disk_var_log_size](defaults/main/main.yml#L182)   | str | `4G` |    
-| [cis_ubuntu2404_var_log_nodev_apply](defaults/main/main.yml#L185)   | bool | `True` |    
-| [cis_ubuntu2404_var_log_nosuid_apply](defaults/main/main.yml#L188)   | bool | `True` |    
-| [cis_ubuntu2404_var_log_noexec_apply](defaults/main/main.yml#L191)   | bool | `True` |    
-| [cis_ubuntu2404_dedicated_disk_var_log_audit_apply](defaults/main/main.yml#L196)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
-| [cis_ubuntu2404_dedicated_disk_var_log_audit_lvol](defaults/main/main.yml#L197)   | str | `lv_var_log_audit` |    
-| [cis_ubuntu2404_dedicated_disk_var_log_audit_type](defaults/main/main.yml#L198)   | str | `ext4` |    
-| [cis_ubuntu2404_dedicated_disk_var_log_audit_size](defaults/main/main.yml#L199)   | str | `4G` |    
-| [cis_ubuntu2404_var_log_audit_nodev_apply](defaults/main/main.yml#L202)   | bool | `True` |    
-| [cis_ubuntu2404_var_log_audit_nosuid_apply](defaults/main/main.yml#L205)   | bool | `True` |    
-| [cis_ubuntu2404_var_log_audit_noexec_apply](defaults/main/main.yml#L208)   | bool | `True` |    
-| [cis_ubuntu2404_gpg_key_check_report](defaults/main/main.yml#L217)   | bool | `True` |    
+| [cis_ubuntu2404_profile](defaults/main.yml#L3)   | str | `level_1_server` |    
+| [cis_ubuntu2404_reboot](defaults/main.yml#L6)   | bool | `True` |    
+| [cis_ubuntu2404_cramfs_apply](defaults/main.yml#L18)   | bool | `True` |    
+| [cis_ubuntu2404_cramfs_conf](defaults/main.yml#L19)   | str | `/etc/modprobe.d/cis_cramfs.conf` |    
+| [cis_ubuntu2404_freevxfs_apply](defaults/main.yml#L22)   | bool | `True` |    
+| [cis_ubuntu2404_freevxfs_conf](defaults/main.yml#L23)   | str | `/etc/modprobe.d/cis_freevxfs.conf` |    
+| [cis_ubuntu2404_hfs_apply](defaults/main.yml#L26)   | bool | `True` |    
+| [cis_ubuntu2404_hfs_conf](defaults/main.yml#L27)   | str | `/etc/modprobe.d/cis_hfs.conf` |    
+| [cis_ubuntu2404_hfsplus_apply](defaults/main.yml#L30)   | bool | `True` |    
+| [cis_ubuntu2404_hfsplus_conf](defaults/main.yml#L31)   | str | `/etc/modprobe.d/cis_hfsplus.conf` |    
+| [cis_ubuntu2404_jffs2_apply](defaults/main.yml#L34)   | bool | `True` |    
+| [cis_ubuntu2404_jffs2_conf](defaults/main.yml#L35)   | str | `/etc/modprobe.d/cis_jffs2.conf` |    
+| [cis_ubuntu2404_overlayfs_apply](defaults/main.yml#L38)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
+| [cis_ubuntu2404_overlayfs_conf](defaults/main.yml#L39)   | str | `/etc/modprobe.d/cis_overlayfs.conf` |    
+| [cis_ubuntu2404_squashfs_apply](defaults/main.yml#L42)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
+| [cis_ubuntu2404_squashfs_conf](defaults/main.yml#L43)   | str | `/etc/modprobe.d/cis_squashfs.conf` |    
+| [cis_ubuntu2404_udf_apply](defaults/main.yml#L46)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
+| [cis_ubuntu2404_udf_conf](defaults/main.yml#L47)   | str | `/etc/modprobe.d/cis_udf.conf` |    
+| [cis_ubuntu2404_usb_storage_apply](defaults/main.yml#L50)   | str | `{{ true if cis_ubuntu2404_profile != 'level_1_workstation' else false }}` |    
+| [cis_ubuntu2404_usb_storage_conf](defaults/main.yml#L51)   | str | `/etc/modprobe.d/cis_usb_storage.conf` |    
+| [cis_ubuntu2404_unused_filesystems_apply](defaults/main.yml#L54)   | bool | `False` |    
+| [cis_ubuntu2404_unused_filesystems_conf](defaults/main.yml#L55)   | str | `/etc/modprobe.d/cis_unused_filesystems.conf` |    
+| [cis_ubuntu2404_unused_filesystems_afs](defaults/main.yml#L56)   | bool | `False` |    
+| [cis_ubuntu2404_unused_filesystems_ceph](defaults/main.yml#L57)   | bool | `False` |    
+| [cis_ubuntu2404_unused_filesystems_exfat](defaults/main.yml#L58)   | bool | `False` |    
+| [cis_ubuntu2404_unused_filesystems_ext](defaults/main.yml#L59)   | bool | `False` |    
+| [cis_ubuntu2404_unused_filesystems_fat](defaults/main.yml#L60)   | bool | `False` |    
+| [cis_ubuntu2404_unused_filesystems_fscache](defaults/main.yml#L61)   | bool | `False` |    
+| [cis_ubuntu2404_unused_filesystems_fuse](defaults/main.yml#L62)   | bool | `False` |    
+| [cis_ubuntu2404_unused_filesystems_gfs2](defaults/main.yml#L63)   | bool | `False` |    
+| [cis_ubuntu2404_unused_filesystems_nfs_common](defaults/main.yml#L64)   | bool | `False` |    
+| [cis_ubuntu2404_unused_filesystems_nfsd](defaults/main.yml#L65)   | bool | `False` |    
+| [cis_ubuntu2404_unused_filesystems_smbfs_common](defaults/main.yml#L66)   | bool | `False` |    
+| [cis_ubuntu2404_dedicated_disk_apply](defaults/main.yml#L89)   | bool | `True` |    
+| [cis_ubuntu2404_dedicated_disk_vgname](defaults/main.yml#L98)   | str | `vg_hardening` |    
+| [cis_ubuntu2404_dedicated_disk_tmp_apply](defaults/main.yml#L103)   | bool | `True` |    
+| [cis_ubuntu2404_dedicated_disk_tmp_lvol](defaults/main.yml#L104)   | str | `lv_tmp` |    
+| [cis_ubuntu2404_dedicated_disk_tmp_type](defaults/main.yml#L105)   | str | `ext4` |    
+| [cis_ubuntu2404_dedicated_disk_tmp_size](defaults/main.yml#L106)   | str | `4G` |    
+| [cis_ubuntu2404_tmp_nodev_apply](defaults/main.yml#L109)   | bool | `True` |    
+| [cis_ubuntu2404_tmp_nosuid_apply](defaults/main.yml#L112)   | bool | `True` |    
+| [cis_ubuntu2404_tmp_noexec_apply](defaults/main.yml#L115)   | bool | `True` |    
+| [cis_ubuntu2404_dev_shm_apply](defaults/main.yml#L120)   | bool | `True` |    
+| [cis_ubuntu2404_dev_shm_nodev_apply](defaults/main.yml#L123)   | bool | `True` |    
+| [cis_ubuntu2404_dev_shm_nosuid_apply](defaults/main.yml#L126)   | bool | `True` |    
+| [cis_ubuntu2404_dev_shm_noexec_apply](defaults/main.yml#L129)   | bool | `True` |    
+| [cis_ubuntu2404_dedicated_disk_home_apply](defaults/main.yml#L134)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
+| [cis_ubuntu2404_dedicated_disk_home_lvol](defaults/main.yml#L135)   | str | `lv_home` |    
+| [cis_ubuntu2404_dedicated_disk_home_type](defaults/main.yml#L136)   | str | `ext4` |    
+| [cis_ubuntu2404_dedicated_disk_home_size](defaults/main.yml#L137)   | str | `2G` |    
+| [cis_ubuntu2404_home_nodev_apply](defaults/main.yml#L140)   | bool | `True` |    
+| [cis_ubuntu2404_home_nosuid_apply](defaults/main.yml#L143)   | bool | `True` |    
+| [cis_ubuntu2404_dedicated_disk_var_apply](defaults/main.yml#L148)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
+| [cis_ubuntu2404_dedicated_disk_var_lvol](defaults/main.yml#L149)   | str | `lv_var` |    
+| [cis_ubuntu2404_dedicated_disk_var_type](defaults/main.yml#L150)   | str | `ext4` |    
+| [cis_ubuntu2404_dedicated_disk_var_size](defaults/main.yml#L151)   | str | `8G` |    
+| [cis_ubuntu2404_var_nodev_apply](defaults/main.yml#L154)   | bool | `True` |    
+| [cis_ubuntu2404_var_nosuid_apply](defaults/main.yml#L157)   | bool | `True` |    
+| [cis_ubuntu2404_dedicated_disk_var_tmp_apply](defaults/main.yml#L162)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
+| [cis_ubuntu2404_dedicated_disk_var_tmp_lvol](defaults/main.yml#L163)   | str | `lv_var_tmp` |    
+| [cis_ubuntu2404_dedicated_disk_var_tmp_type](defaults/main.yml#L164)   | str | `ext4` |    
+| [cis_ubuntu2404_dedicated_disk_var_tmp_size](defaults/main.yml#L165)   | str | `2G` |    
+| [cis_ubuntu2404_var_tmp_nodev_apply](defaults/main.yml#L168)   | bool | `True` |    
+| [cis_ubuntu2404_var_tmp_nosuid_apply](defaults/main.yml#L171)   | bool | `True` |    
+| [cis_ubuntu2404_var_tmp_noexec_apply](defaults/main.yml#L174)   | bool | `True` |    
+| [cis_ubuntu2404_dedicated_disk_var_log_apply](defaults/main.yml#L179)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
+| [cis_ubuntu2404_dedicated_disk_var_log_lvol](defaults/main.yml#L180)   | str | `lv_var_log` |    
+| [cis_ubuntu2404_dedicated_disk_var_log_type](defaults/main.yml#L181)   | str | `ext4` |    
+| [cis_ubuntu2404_dedicated_disk_var_log_size](defaults/main.yml#L182)   | str | `4G` |    
+| [cis_ubuntu2404_var_log_nodev_apply](defaults/main.yml#L185)   | bool | `True` |    
+| [cis_ubuntu2404_var_log_nosuid_apply](defaults/main.yml#L188)   | bool | `True` |    
+| [cis_ubuntu2404_var_log_noexec_apply](defaults/main.yml#L191)   | bool | `True` |    
+| [cis_ubuntu2404_dedicated_disk_var_log_audit_apply](defaults/main.yml#L196)   | str | `{{ true if cis_ubuntu2404_profile in ['level_2_server', 'level_2_workstation'] else false }}` |    
+| [cis_ubuntu2404_dedicated_disk_var_log_audit_lvol](defaults/main.yml#L197)   | str | `lv_var_log_audit` |    
+| [cis_ubuntu2404_dedicated_disk_var_log_audit_type](defaults/main.yml#L198)   | str | `ext4` |    
+| [cis_ubuntu2404_dedicated_disk_var_log_audit_size](defaults/main.yml#L199)   | str | `4G` |    
+| [cis_ubuntu2404_var_log_audit_nodev_apply](defaults/main.yml#L202)   | bool | `True` |    
+| [cis_ubuntu2404_var_log_audit_nosuid_apply](defaults/main.yml#L205)   | bool | `True` |    
+| [cis_ubuntu2404_var_log_audit_noexec_apply](defaults/main.yml#L208)   | bool | `True` |    
+| [cis_ubuntu2404_gpg_key_check_report](defaults/main.yml#L217)   | bool | `True` |    
 
 
 ### Vars

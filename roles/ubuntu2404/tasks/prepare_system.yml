@@ -1,7 +1,0 @@
----
-# Can take a long time to run on shutdown and even hangs interfering with reboot tasks
-- name: Stop unattended-upgrades service
-  ansible.builtin.service:
-    name: unattended-upgrades
-    state: stopped
-    enabled: false

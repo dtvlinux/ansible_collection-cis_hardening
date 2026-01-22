@@ -1,0 +1,4 @@
+---
+- name: 1.2.1 | Configure Package Repositories | Import tasks
+  ansible.builtin.import_tasks:
+    file: 1_2_1_gpg_keys/main.yml

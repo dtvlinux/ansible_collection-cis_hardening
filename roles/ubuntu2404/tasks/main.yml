@@ -3,11 +3,24 @@
   when: ansible_facts['distribution_release'] == 'noble'
   tags: cis_ubuntu2404
   block:
-    - name: Prepare system for CIS benchmarking tasks
-      ansible.builtin.import_tasks:
-        file: prepare_system.yml
-      tags: always
-
     - name: 1 | Initial setup | Import tasks
       ansible.builtin.import_tasks:
         file: 1_initial_setup/main.yml
+
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
+      tags: always
+  always:
+    - name: Manual Actions Report
+      ansible.builtin.debug:
+        msg: |
+          {% if ansible_facts['cis_manual_actions'] | default([]) | length > 0 %}
+          The following CIS rules have been flagged for manual review:
+          {% for action in ansible_facts['cis_manual_actions'] %}
+            {{ action }}
+          {% endfor %}
+          {% else %}
+          No manual actions required.
+          {% endif %}
+      changed_when: ansible_facts['cis_manual_actions'] | default([]) | length > 0
+      tags: always

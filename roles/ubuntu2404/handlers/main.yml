@@ -1,14 +1,30 @@
 ---
+- name: Stop unattended-upgrades service
+  listen: dtvlinux.cis_hardening.reboot
+  when:
+    - cis_ubuntu2404_reboot
+    - (
+        tmp_partition_result.reboot_required           | default(false) | bool or
+        home_partition_result.reboot_required          | default(false) | bool or
+        var_partition_result.reboot_required           | default(false) | bool or
+        var_tmp_partition_result.reboot_required       | default(false) | bool or
+        var_log_partition_result.reboot_required       | default(false) | bool or
+        var_log_audit_partition_result.reboot_required | default(false) | bool
+      )
+  ansible.builtin.service:
+    name: unattended-upgrades
+    state: stopped
+
 - name: Rebooting system for partition changes
   listen: dtvlinux.cis_hardening.reboot
   when:
     - cis_ubuntu2404_reboot
     - (
-        tmp_partition_result.reboot_required | default(false) | bool or
-        home_partition_result.reboot_required | default(false) | bool or
-        var_partition_result.reboot_required | default(false) | bool or
-        var_tmp_partition_result.reboot_required | default(false) | bool or
-        var_log_partition_result.reboot_required | default(false) | bool or
+        tmp_partition_result.reboot_required           | default(false) | bool or
+        home_partition_result.reboot_required          | default(false) | bool or
+        var_partition_result.reboot_required           | default(false) | bool or
+        var_tmp_partition_result.reboot_required       | default(false) | bool or
+        var_log_partition_result.reboot_required       | default(false) | bool or
         var_log_audit_partition_result.reboot_required | default(false) | bool
       )
   ansible.builtin.reboot:
@@ -22,11 +38,11 @@
 - name: Remount /tmp
   when: >
     not (
-      (tmp_partition_result.reboot_required | default(false)) or
-      (home_partition_result.reboot_required | default(false)) or
-      (var_partition_result.reboot_required | default(false)) or
-      (var_tmp_partition_result.reboot_required | default(false)) or
-      (var_log_partition_result.reboot_required | default(false)) or
+      (tmp_partition_result.reboot_required           | default(false)) or
+      (home_partition_result.reboot_required          | default(false)) or
+      (var_partition_result.reboot_required           | default(false)) or
+      (var_tmp_partition_result.reboot_required       | default(false)) or
+      (var_log_partition_result.reboot_required       | default(false)) or
       (var_log_audit_partition_result.reboot_required | default(false))
     )
   ansible.builtin.shell:
@@ -39,11 +55,11 @@
 - name: Remount /dev/shm
   when: >
     not (
-      (tmp_partition_result.reboot_required | default(false)) or
-      (home_partition_result.reboot_required | default(false)) or
-      (var_partition_result.reboot_required | default(false)) or
-      (var_tmp_partition_result.reboot_required | default(false)) or
-      (var_log_partition_result.reboot_required | default(false)) or
+      (tmp_partition_result.reboot_required           | default(false)) or
+      (home_partition_result.reboot_required          | default(false)) or
+      (var_partition_result.reboot_required           | default(false)) or
+      (var_tmp_partition_result.reboot_required       | default(false)) or
+      (var_log_partition_result.reboot_required       | default(false)) or
       (var_log_audit_partition_result.reboot_required | default(false))
     )
   ansible.builtin.command:
@@ -54,11 +70,11 @@
 - name: Remount /home
   when: >
     not (
-      (tmp_partition_result.reboot_required | default(false)) or
-      (home_partition_result.reboot_required | default(false)) or
-      (var_partition_result.reboot_required | default(false)) or
-      (var_tmp_partition_result.reboot_required | default(false)) or
-      (var_log_partition_result.reboot_required | default(false)) or
+      (tmp_partition_result.reboot_required           | default(false)) or
+      (home_partition_result.reboot_required          | default(false)) or
+      (var_partition_result.reboot_required           | default(false)) or
+      (var_tmp_partition_result.reboot_required       | default(false)) or
+      (var_log_partition_result.reboot_required       | default(false)) or
       (var_log_audit_partition_result.reboot_required | default(false))
     )
   ansible.builtin.shell:
@@ -71,11 +87,11 @@
 - name: Remount /var
   when: >
     not (
-      (tmp_partition_result.reboot_required | default(false)) or
-      (home_partition_result.reboot_required | default(false)) or
-      (var_partition_result.reboot_required | default(false)) or
-      (var_tmp_partition_result.reboot_required | default(false)) or
-      (var_log_partition_result.reboot_required | default(false)) or
+      (tmp_partition_result.reboot_required           | default(false)) or
+      (home_partition_result.reboot_required          | default(false)) or
+      (var_partition_result.reboot_required           | default(false)) or
+      (var_tmp_partition_result.reboot_required       | default(false)) or
+      (var_log_partition_result.reboot_required       | default(false)) or
       (var_log_audit_partition_result.reboot_required | default(false))
     )
   ansible.builtin.shell:
@@ -88,11 +104,11 @@
 - name: Remount /var/tmp
   when: >
     not (
-      (tmp_partition_result.reboot_required | default(false)) or
-      (home_partition_result.reboot_required | default(false)) or
-      (var_partition_result.reboot_required | default(false)) or
-      (var_tmp_partition_result.reboot_required | default(false)) or
-      (var_log_partition_result.reboot_required | default(false)) or
+      (tmp_partition_result.reboot_required           | default(false)) or
+      (home_partition_result.reboot_required          | default(false)) or
+      (var_partition_result.reboot_required           | default(false)) or
+      (var_tmp_partition_result.reboot_required       | default(false)) or
+      (var_log_partition_result.reboot_required       | default(false)) or
       (var_log_audit_partition_result.reboot_required | default(false))
     )
   ansible.builtin.shell:
@@ -105,11 +121,11 @@
 - name: Remount /var/log
   when: >
     not (
-      (tmp_partition_result.reboot_required | default(false)) or
-      (home_partition_result.reboot_required | default(false)) or
-      (var_partition_result.reboot_required | default(false)) or
-      (var_tmp_partition_result.reboot_required | default(false)) or
-      (var_log_partition_result.reboot_required | default(false)) or
+      (tmp_partition_result.reboot_required           | default(false)) or
+      (home_partition_result.reboot_required          | default(false)) or
+      (var_partition_result.reboot_required           | default(false)) or
+      (var_tmp_partition_result.reboot_required       | default(false)) or
+      (var_log_partition_result.reboot_required       | default(false)) or
       (var_log_audit_partition_result.reboot_required | default(false))
     )
   ansible.builtin.shell:
@@ -122,11 +138,11 @@
 - name: Remount /var/log/audit
   when: >
     not (
-      (tmp_partition_result.reboot_required | default(false)) or
-      (home_partition_result.reboot_required | default(false)) or
-      (var_partition_result.reboot_required | default(false)) or
-      (var_tmp_partition_result.reboot_required | default(false)) or
-      (var_log_partition_result.reboot_required | default(false)) or
+      (tmp_partition_result.reboot_required           | default(false)) or
+      (home_partition_result.reboot_required          | default(false)) or
+      (var_partition_result.reboot_required           | default(false)) or
+      (var_tmp_partition_result.reboot_required       | default(false)) or
+      (var_log_partition_result.reboot_required       | default(false)) or
       (var_log_audit_partition_result.reboot_required | default(false))
     )
   ansible.builtin.shell:

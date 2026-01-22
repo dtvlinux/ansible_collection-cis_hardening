@@ -4,6 +4,30 @@ Dtvlinux.Cis\_Hardening Release Notes
 
 .. contents:: Topics
 
+v0.3.0
+======
+
+Release Summary
+---------------
+
+This release now covers CIS rule 1.2.1.1 (ensure GPG keys are configured)
+
+Major Changes
+-------------
+
+- Added debug task to report on CIS rules that require manual actions
+- Added task for CIS rule 1.2.1.1 (ensure GPG keys are configured)
+
+Minor Changes
+-------------
+
+- Moved unattended-upgrades service stop task to handlers so it only stops for reboots. Service no longer set to disabled.
+
+New Modules
+-----------
+
+- dtvlinux.cis_hardening.check_gpg_keys - Gather GPG key information from APT trusted directories for CIS auditing
+
 v0.2.1
 ======
 

@@ -206,3 +206,12 @@ cis_ubuntu2404_var_log_audit_nosuid_apply: true
 
 ##### 1.1.2.7.4 - Ensure noexec option set on /var/log/audit partition
 cis_ubuntu2404_var_log_audit_noexec_apply: true
+
+## 1.2 - Package Management
+## ----------------
+
+### 1.2.1 - Configure Package Repositories
+### -------------------------------------------
+
+#### 1.2.1.1 - Ensure GPG keys are configured (Manual)
+cis_ubuntu2404_gpg_key_check_report: true

@@ -40,9 +40,6 @@ options:
     type: list
     elements: str
     default: []
-requirements:
-  - gpg (command-line tool must be installed on the target host)
-  - awk (for parsing output)
 '''
 
 EXAMPLES = r'''

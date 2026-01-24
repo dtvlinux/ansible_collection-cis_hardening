@@ -35,10 +35,10 @@ To upgrade the collection to the latest available version, run the following com
 ansible-galaxy collection install dtvlinux.cis_hardening --upgrade
 ```
 
-You can also install a specific version of the collection, for example, if you need to downgrade when something is broken in the latest version. Use the following syntax to install version 0.2.0:
+You can also install a specific version of the collection, for example, if you need to downgrade when something is broken in the latest version. Use the following syntax to install version 0.4.0:
 
 ```shell
-ansible-galaxy collection install dtvlinux.cis_hardening:==0.2.0
+ansible-galaxy collection install dtvlinux.cis_hardening:==0.4.0
 ```
 
 See [using Ansible collections](https://docs.ansible.com/ansible/devel/user_guide/collections_using.html) for more details.
@@ -53,7 +53,7 @@ The roles and modules in this collection can be used on systems that are in use,
 
 1. Never deploy this collection to production systems without prior testing against non-production systems.
 2. Ensure that multiple teams are involved in said testing to provide feedback on any issues in their areas of responsibility.
-3. The above two points is applicable even when updating indiviudal variable values. You must confirm the impact of a change.
+3. The above two points is applicable even when updating individual variable values. You must confirm the impact of a change.
 4. Always have a working backup, restore and disaster recovery process in place and confirmed as working.
 
 It is worth noting that certain hardening tasks will trigger a system reboot or service restarts, which will impact the availability of a system. These tasks can be toggled on/off via Boolean variables, or by a dedicated reboot variable, so set according to your needs.

@@ -215,3 +215,6 @@ cis_ubuntu2404_var_log_audit_noexec_apply: true
 
 #### 1.2.1.1 - Ensure GPG keys are configured (Manual)
 cis_ubuntu2404_gpg_key_check_report: true
+
+#### 1.2.1.2 - Ensure package manager repositories are configured (Manual)
+cis_ubuntu2404_repositories_check_report: true

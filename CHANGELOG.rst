@@ -4,19 +4,37 @@ Dtvlinux.Cis\_Hardening Release Notes
 
 .. contents:: Topics
 
+v0.4.0
+======
+
+Release Summary
+---------------
+
+This release now covers CIS rule 1.2.1.2 (Ensure package manager repositories are configured).
+
+Minor Changes
+-------------
+
+- Added task for CIS rule 1.2.1.2 (Ensure package manager repositories are configured).
+
+New Modules
+-----------
+
+- dtvlinux.cis_hardening.check_repositories - Gather APT repositories and metadata for CIS auditing.
+
 v0.3.0
 ======
 
 Release Summary
 ---------------
 
-This release now covers CIS rule 1.2.1.1 (ensure GPG keys are configured)
+This release now covers CIS rule 1.2.1.1 (ensure GPG keys are configured).
 
 Major Changes
 -------------
 
-- Added debug task to report on CIS rules that require manual actions
-- Added task for CIS rule 1.2.1.1 (ensure GPG keys are configured)
+- Added debug task to report on CIS rules that require manual actions.
+- Added task for CIS rule 1.2.1.1 (ensure GPG keys are configured).
 
 Minor Changes
 -------------
@@ -26,7 +44,7 @@ Minor Changes
 New Modules
 -----------
 
-- dtvlinux.cis_hardening.check_gpg_keys - Gather GPG key information from APT trusted directories for CIS auditing
+- dtvlinux.cis_hardening.check_gpg_keys - Gather GPG key information from APT trusted directories for CIS auditing.
 
 v0.2.1
 ======

@@ -107,6 +107,7 @@ Description: System hardening tasks for security
 | [cis_ubuntu2404_var_log_audit_nosuid_apply](defaults/main.yml#L205)   | bool | `True` |    
 | [cis_ubuntu2404_var_log_audit_noexec_apply](defaults/main.yml#L208)   | bool | `True` |    
 | [cis_ubuntu2404_gpg_key_check_report](defaults/main.yml#L217)   | bool | `True` |    
+| [cis_ubuntu2404_repositories_check_report](defaults/main.yml#L220)   | bool | `True` |    
 
 
 ### Vars
@@ -250,11 +251,12 @@ Description: System hardening tasks for security
 | 1.1.1 ¦ Configure filesystem kernel modules ¦ Import tasks | ansible.builtin.import_tasks | False |
 | 1.1.1 ¦ Configure filesystem kernel modules ¦ Import tasks | ansible.builtin.import_tasks | False |
 
-#### File: tasks/1_initial_setup/1_2_package_management/1_2_1_gpg_keys/main.yml
+#### File: tasks/1_initial_setup/1_2_package_management/1_2_1_package_repos/main.yml
 
 | Name | Module | Has Conditions | Tags |
 | ---- | ------ | -------------- | -----|
 | 1.2.1.1 ¦ Ensure GPG keys are configured ¦ Manual Actions Report | dtvlinux.cis_hardening.check_gpg_keys | True |  |
+| 1.2.1.2 ¦ Ensure package manager repositories are configured ¦ Manual Actions Report | dtvlinux.cis_hardening.check_repositories | True |  |
 
 #### File: tasks/1_initial_setup/1_2_package_management/main.yml
 

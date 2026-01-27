@@ -84,3 +84,17 @@ releases:
       name: check_repositories
       namespace: ''
     release_date: '2026-01-24'
+  0.5.0:
+    changes:
+      minor_changes:
+      - Added task for CIS rule 1.2.2.1 (Ensure updates, patches, and additional security
+        software are installed).
+      release_summary: This release now covers CIS rule 1.2.2.1 (Ensure updates, patches,
+        and additional security software are installed).
+    fragments:
+    - 0.5.0.yaml
+    modules:
+    - description: Check for upgradable packages using apt for CIS auditing.
+      name: check_package_updates
+      namespace: ''
+    release_date: '2026-01-27'

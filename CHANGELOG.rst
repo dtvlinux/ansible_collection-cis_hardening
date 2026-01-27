@@ -4,6 +4,24 @@ Dtvlinux.Cis\_Hardening Release Notes
 
 .. contents:: Topics
 
+v0.5.0
+======
+
+Release Summary
+---------------
+
+This release now covers CIS rule 1.2.2.1 (Ensure updates, patches, and additional security software are installed).
+
+Minor Changes
+-------------
+
+- Added task for CIS rule 1.2.2.1 (Ensure updates, patches, and additional security software are installed).
+
+New Modules
+-----------
+
+- dtvlinux.cis_hardening.check_package_updates - Check for upgradable packages using apt for CIS auditing.
+
 v0.4.0
 ======
 

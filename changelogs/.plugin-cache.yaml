@@ -25,6 +25,11 @@ plugins:
       name: check_gpg_keys
       namespace: ''
       version_added: 1.0.0
+    check_package_updates:
+      description: Check for upgradable packages using apt for CIS auditing
+      name: check_package_updates
+      namespace: ''
+      version_added: 1.0.0
     check_repositories:
       description: Gather and format APT repository metadata for CIS reporting
       name: check_repositories
@@ -45,4 +50,4 @@ plugins:
   strategy: {}
   test: {}
   vars: {}
-version: 0.4.0
+version: 0.5.0

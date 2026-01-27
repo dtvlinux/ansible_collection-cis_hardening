@@ -108,6 +108,7 @@ Description: System hardening tasks for security
 | [cis_ubuntu2404_var_log_audit_noexec_apply](defaults/main.yml#L208)   | bool | `True` |    
 | [cis_ubuntu2404_gpg_key_check_report](defaults/main.yml#L217)   | bool | `True` |    
 | [cis_ubuntu2404_repositories_check_report](defaults/main.yml#L220)   | bool | `True` |    
+| [cis_ubuntu2404_package_updates_check_report](defaults/main.yml#L226)   | bool | `True` |    
 
 
 ### Vars
@@ -258,11 +259,18 @@ Description: System hardening tasks for security
 | 1.2.1.1 ¦ Ensure GPG keys are configured ¦ Manual Actions Report | dtvlinux.cis_hardening.check_gpg_keys | True |  |
 | 1.2.1.2 ¦ Ensure package manager repositories are configured ¦ Manual Actions Report | dtvlinux.cis_hardening.check_repositories | True |  |
 
+#### File: tasks/1_initial_setup/1_2_package_management/1_2_2_package_updates/main.yml
+
+| Name | Module | Has Conditions | Tags |
+| ---- | ------ | -------------- | -----|
+| 1.2.2.1 ¦ Ensure updates, patches, and additional security software are installed ¦ Manual Actions Report | dtvlinux.cis_hardening.check_package_updates | True |  |
+
 #### File: tasks/1_initial_setup/1_2_package_management/main.yml
 
 | Name | Module | Has Conditions |
 | ---- | ------ | -------------- |
 | 1.2.1 ¦ Configure Package Repositories ¦ Import tasks | ansible.builtin.import_tasks | False |
+| 1.2.2 ¦ Configure Package Updates ¦ Import tasks | ansible.builtin.import_tasks | False |
 
 #### File: tasks/1_initial_setup/main.yml
 

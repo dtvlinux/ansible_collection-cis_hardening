@@ -218,3 +218,9 @@ cis_ubuntu2404_gpg_key_check_report: true
 
 #### 1.2.1.2 - Ensure package manager repositories are configured (Manual)
 cis_ubuntu2404_repositories_check_report: true
+
+### 1.2.2 - Configure Package Updates
+### -------------------------------------------
+
+#### 1.2.2.1 - Ensure updates, patches, and additional security software are installed (Manual)
+cis_ubuntu2404_package_updates_check_report: true
